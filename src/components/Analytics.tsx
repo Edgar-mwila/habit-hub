@@ -1,119 +1,102 @@
 import React from 'react';
-import { BarChart2, PieChart, TrendingUp, Award } from 'react-feather';
+import { BarChart2, PieChart } from 'lucide-react';
+
+type CategoryData = {
+  category: string;
+  completed: number;
+  total: number;
+  streak: number;
+};
 
 export const Analytics: React.FC = () => {
-  // Mock data for charts
-  const completionRate = 75;
-  const categoryData = [
-    { category: 'Health', completed: 8, total: 10 },
-    { category: 'Career', completed: 6, total: 8 },
-    { category: 'Personal', completed: 4, total: 5 },
-    { category: 'Finance', completed: 3, total: 6 },
+
+  const completionRate: number = 75;
+  const categoryData: CategoryData[] = [
+    { category: 'Health', completed: 8, total: 10, streak: 5 },
+    { category: 'Career', completed: 6, total: 8, streak: 3 },
+    { category: 'Personal', completed: 4, total: 5, streak: 2 },
+    { category: 'Finance', completed: 3, total: 6, streak: 1 },
   ];
 
+  const getMotivationalMessage = (completion: number): string => {
+    if (completion >= 80) return "Outstanding progress! You're crushing it! 🌟";
+    if (completion >= 60) return "Great work! Keep up the momentum! 💪";
+    if (completion >= 40) return "You're making steady progress! Keep going! 🎯";
+    return "Every step counts! You've got this! 🌱";
+  };
+
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto p-6" style={{ background: 'linear-gradient(to bottom right, #FFEFDB, #C79DD7)' }}>
       <header className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">Analytics</h1>
-        <p className="text-xl text-gray-600">Track your progress and insights</p>
+        <h1 className="text-4xl font-bold text-purple-800">Your Progress Journey</h1>
+        <p className="text-lg text-orange-700">Tracking your path to success</p>
       </header>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
-            <BarChart2 className="mr-2" /> Overall Completion Rate
+        {/* Progress Overview Card */}
+        <div className="p-6 rounded-lg shadow-lg bg-white">
+          <h2 className="text-2xl font-bold flex items-center text-purple-800 mb-4">
+            <BarChart2 className="mr-2 text-orange-500" /> Progress Overview
           </h2>
-          <div className="flex items-center justify-center">
-            <div className="relative w-48 h-48">
-              <svg className="w-full h-full" viewBox="0 0 36 36">
-                <path
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#E5E7EB"
-                  strokeWidth="3"
-                />
-                <path
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="#3B82F6"
-                  strokeWidth="3"
-                  strokeDasharray={`${completionRate}, 100`}
-                />
-                <text x="18" y="20.35" className="text-5xl font-bold" textAnchor="middle" fill="#3B82F6">
-                  {completionRate}%
-                </text>
-              </svg>
+          <div className="relative w-48 h-48 mx-auto">
+            <svg className="w-full h-full transform -rotate-90">
+              <circle
+                cx="96"
+                cy="96"
+                r="88"
+                fill="none"
+                stroke="#FFEFDB"
+                strokeWidth="12"
+              />
+              <circle
+                cx="96"
+                cy="96"
+                r="88"
+                fill="none"
+                stroke="#C084FC"
+                strokeWidth="12"
+                strokeDasharray={`${2 * Math.PI * 88 * completionRate / 100} ${2 * Math.PI * 88}`}
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-4xl font-bold text-purple-700">{completionRate}%</span>
             </div>
           </div>
+          <p className="text-center mt-4 text-orange-600 font-medium">
+            {getMotivationalMessage(completionRate)}
+          </p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
-            <PieChart className="mr-2" /> Goals by Category
+
+        {/* Category Progress Card */}
+        <div className="p-6 rounded-lg shadow-lg bg-white">
+          <h2 className="text-2xl font-bold flex items-center text-purple-800 mb-4">
+            <PieChart className="mr-2 text-orange-500" /> Category Progress
           </h2>
-          <div className="space-y-4">
-            {categoryData.map(({ category, completed, total }) => (
-              <div key={category}>
-                <div className="flex justify-between mb-1">
-                  <span className="font-semibold">{category}</span>
-                  <span>
-                    {completed}/{total}
-                  </span>
+          <div className="space-y-6">
+            {categoryData.map(({ category, completed, total, streak }) => (
+              <div key={category} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-purple-800">{category}</span>
+                  <div className="flex items-center">
+                    <span className="text-orange-600">{completed}/{total}</span>
+                    {streak > 0 && (
+                      <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
+                        {streak} day streak! 🔥
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="w-full bg-purple-100 rounded-full h-3">
                   <div
-                    className="bg-blue-500 h-2.5 rounded-full"
+                    className="bg-gradient-to-r from-purple-500 to-orange-400 h-3 rounded-full transition-all duration-500"
                     style={{ width: `${(completed / total) * 100}%` }}
-                  ></div>
+                  />
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
-            <TrendingUp className="mr-2" /> Progress Over Time
-          </h2>
-          <div className="h-64 flex items-end justify-between">
-            {[30, 45, 60, 75, 50, 80, 70].map((value, index) => (
-              <div key={index} className="w-8 bg-blue-500 rounded-t" style={{ height: `${value}%` }}></div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-2 text-sm text-gray-600">
-            <span>Week 1</span>
-            <span>Week 2</span>
-            <span>Week 3</span>
-            <span>Week 4</span>
-            <span>Week 5</span>
-            <span>Week 6</span>
-            <span>Week 7</span>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
-            <Award className="mr-2" /> Achievements
-          </h2>
-          <ul className="space-y-4">
-            {[
-              { title: 'Goal Setter', description: 'Set your first 10 goals' },
-              { title: 'Consistent Achiever', description: 'Complete goals for 7 days in a row' },
-              { title: 'Category Master', description: 'Complete all goals in a category' },
-              { title: 'Overachiever', description: 'Complete 50 goals' },
-            ].map((achievement, index) => (
-              <li key={index} className="flex items-center">
-                <Award className="text-yellow-500 mr-2" />
-                <div>
-                  <h3 className="font-semibold">{achievement.title}</h3>
-                  <p className="text-sm text-gray-600">{achievement.description}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </div>
   );
 };
-
