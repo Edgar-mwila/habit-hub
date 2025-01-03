@@ -1,45 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X, Clock, CalendarIcon as CalIcon, Target } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Plus, X, Clock, CalendarIcon as CalIcon, Target, ChevronDown } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { LocalStorageManager } from '../services/LocalStorageManager';
 import { Event } from '../types';
 import { useSettings } from '../context/settings';
 
-export const CalendarView: React.FC = () => {
+export const CalendarView = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [showEventForm, setShowEventForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [drawerMode, setDrawerMode] = useState<'view' | 'add'>('view');
   const { settings } = useSettings();
 
   useEffect(() => {
     setEvents(LocalStorageManager.getEvents());
-
-    // Handle resize events for responsive design
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const typeStyles = {
-    goal: settings.darkMode
-      ? 'bg-purple-900 text-purple-200 border-purple-700'
-      : 'bg-purple-100 text-purple-800 border-purple-200',
-    task: settings.darkMode
-      ? 'bg-orange-900 text-orange-200 border-orange-700'
-      : 'bg-orange-100 text-orange-800 border-orange-200',
-    appointment: settings.darkMode
-      ? 'bg-blue-900 text-blue-200 border-blue-700'
-      : 'bg-blue-100 text-blue-800 border-blue-200'
+  const eventTypeStyles = {
+    goal: {
+      dot: settings.darkMode ? 'bg-purple-400' : 'bg-purple-500',
+      bg: settings.darkMode ? 'bg-purple-900/20' : 'bg-purple-50',
+      text: settings.darkMode ? 'text-purple-300' : 'text-purple-800',
+      border: settings.darkMode ? 'border-purple-700' : 'border-purple-200'
+    },
+    task: {
+      dot: settings.darkMode ? 'bg-orange-400' : 'bg-orange-500',
+      bg: settings.darkMode ? 'bg-orange-900/20' : 'bg-orange-50',
+      text: settings.darkMode ? 'text-orange-300' : 'text-orange-800',
+      border: settings.darkMode ? 'border-orange-700' : 'border-orange-200'
+    },
+    appointment: {
+      dot: settings.darkMode ? 'bg-blue-400' : 'bg-blue-500',
+      bg: settings.darkMode ? 'bg-blue-900/20' : 'bg-blue-50',
+      text: settings.darkMode ? 'text-blue-300' : 'text-blue-800',
+      border: settings.darkMode ? 'border-blue-700' : 'border-blue-200'
+    }
   };
 
   const typeIcons = {
-    goal: <Target className="w-3 h-3 mr-1" />,
-    task: <Clock className="w-3 h-3 mr-1" />,
-    appointment: <CalIcon className="w-3 h-3 mr-1" />
+    goal: <Target className="w-4 h-4" />,
+    task: <Clock className="w-4 h-4" />,
+    appointment: <CalIcon className="w-4 h-4" />
   };
 
-  const EventForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const EventDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const [newEvent, setNewEvent] = useState<Omit<Event, 'id'>>({
       title: '',
       date: selectedDate || new Date().toISOString().split('T')[0],
@@ -48,93 +57,208 @@ export const CalendarView: React.FC = () => {
       description: ''
     });
 
+    const selectedDateEvents = useMemo(() => {
+      if (!selectedDate) return [];
+      return events.filter(event => event.date === selectedDate);
+    }, [selectedDate, events]);
+
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       const event = { ...newEvent, id: Date.now().toString() };
       LocalStorageManager.addEvent(event as Event);
       setEvents(prev => [...prev, event as Event]);
-      onClose();
+      setDrawerMode('view');
+    };
+
+    const handleDelete = (eventId: string) => {
+      LocalStorageManager.deleteEvent(eventId);
+      setEvents(prev => prev.filter(event => event.id !== eventId));
     };
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className={`${settings.darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 w-full max-w-md`}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className={`text-xl font-semibold ${settings.darkMode ? 'text-purple-300' : 'text-purple-800'}`}>Add New Event</h3>
-            <button onClick={onClose} className={`${settings.darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
-              <X size={20} />
-            </button>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Event Title"
-              className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${
-                settings.darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'
-              }`}
-              value={newEvent.title}
-              onChange={e => setNewEvent({...newEvent, title: e.target.value})}
-              required
-            />
-            <select
-              className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${
-                settings.darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'
-              }`}
-              value={newEvent.type}
-              onChange={e => setNewEvent({...newEvent, type: e.target.value as Event['type']})}
-            >
-              <option value="task">Task</option>
-              <option value="goal">Goal</option>
-              <option value="appointment">Appointment</option>
-            </select>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="date"
-                className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${
-                  settings.darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className={`fixed inset-y-0 right-0 w-full md:w-96 ${
+          settings.darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+        } shadow-xl z-50 overflow-hidden flex flex-col`}
+      >
+        <div className="p-4 border-b flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold">
+              {selectedDate && new Date(selectedDate).toLocaleDateString('default', { 
+                month: 'long', 
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </h3>
+            <div className="flex mt-1 space-x-2">
+              <button
+                onClick={() => setDrawerMode('view')}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  drawerMode === 'view'
+                    ? 'bg-purple-500 text-white'
+                    : settings.darkMode
+                    ? 'text-gray-300 hover:bg-gray-700'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
-                value={newEvent.date}
-                onChange={e => setNewEvent({...newEvent, date: e.target.value})}
-                required
-              />
-              <input
-                type="time"
-                className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${
-                  settings.darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'
+              >
+                View Events
+              </button>
+              <button
+                onClick={() => setDrawerMode('add')}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  drawerMode === 'add'
+                    ? 'bg-purple-500 text-white'
+                    : settings.darkMode
+                    ? 'text-gray-300 hover:bg-gray-700'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
-                value={newEvent.time}
-                onChange={e => setNewEvent({...newEvent, time: e.target.value})}
-              />
+              >
+                Add Event
+              </button>
             </div>
-            <textarea
-              placeholder="Description"
-              className={`w-full p-2 border rounded focus:ring-2 focus:ring-purple-500 ${
-                settings.darkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'
-              }`}
-              value={newEvent.description}
-              onChange={e => setNewEvent({...newEvent, description: e.target.value})}
-              rows={3}
-            />
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-orange-500 text-white py-2 rounded hover:from-purple-700 hover:to-orange-600"
-            >
-              Add Event
-            </button>
-          </form>
+          </div>
+          <button
+            onClick={onClose}
+            className={`p-2 rounded-full ${
+              settings.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+            }`}
+          >
+            <X size={20} />
+          </button>
         </div>
-      </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {drawerMode === 'view' ? (
+            <div className="p-4 space-y-4">
+              {selectedDateEvents.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No events scheduled for this day
+                </div>
+              ) : (
+                selectedDateEvents.map(event => (
+                  <div
+                    key={event.id}
+                    className={`p-4 rounded-lg border ${eventTypeStyles[event.type].bg} ${eventTypeStyles[event.type].border}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className={eventTypeStyles[event.type].text}>
+                          {typeIcons[event.type]}
+                        </span>
+                        <h4 className="font-medium">{event.title}</h4>
+                      </div>
+                      <button
+                        onClick={() => handleDelete(event.id)}
+                        className="text-gray-500 hover:text-red-500"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    {event.time && (
+                      <div className="flex items-center mt-2 text-sm text-gray-500">
+                        <Clock size={14} className="mr-1" />
+                        {event.time}
+                      </div>
+                    )}
+                    {event.description && (
+                      <p className="mt-2 text-sm text-gray-600">{event.description}</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="p-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Event Title"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
+                    settings.darkMode
+                      ? 'bg-gray-700 border-gray-600'
+                      : 'bg-white border-gray-300'
+                  }`}
+                  value={newEvent.title}
+                  onChange={e => setNewEvent({ ...newEvent, title: e.target.value })}
+                  required
+                />
+                <select
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
+                    settings.darkMode
+                      ? 'bg-gray-700 border-gray-600'
+                      : 'bg-white border-gray-300'
+                  }`}
+                  value={newEvent.type}
+                  onChange={e =>
+                    setNewEvent({ ...newEvent, type: e.target.value as Event['type'] })
+                  }
+                >
+                  <option value="task">Task</option>
+                  <option value="goal">Goal</option>
+                  <option value="appointment">Appointment</option>
+                </select>
+                <input
+                  type="time"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
+                    settings.darkMode
+                      ? 'bg-gray-700 border-gray-600'
+                      : 'bg-white border-gray-300'
+                  }`}
+                  value={newEvent.time}
+                  onChange={e => setNewEvent({ ...newEvent, time: e.target.value })}
+                />
+                <textarea
+                  placeholder="Description"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
+                    settings.darkMode
+                      ? 'bg-gray-700 border-gray-600'
+                      : 'bg-white border-gray-300'
+                  }`}
+                  value={newEvent.description}
+                  onChange={e =>
+                    setNewEvent({ ...newEvent, description: e.target.value })
+                  }
+                  rows={3}
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  Add Event
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
+      </motion.div>
     );
   };
 
   const renderCalendar = () => {
-    const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+    const daysInMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0
+    ).getDate();
+    const firstDayOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    ).getDay();
     const days = [];
 
     // Empty cells for days before start of month
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className={`h-24 md:h-32 ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}></div>);
+      days.push(
+        <div
+          key={`empty-${i}`}
+          className={`h-24 ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}
+        />
+      );
     }
 
     // Calendar days
@@ -143,46 +267,48 @@ export const CalendarView: React.FC = () => {
       const dateString = date.toISOString().split('T')[0];
       const dayEvents = events.filter(event => event.date === dateString);
       const isToday = new Date().toDateString() === date.toDateString();
+      const isSelected = dateString === selectedDate;
 
       days.push(
         <div
           key={day}
-          className={`h-24 md:h-32 ${settings.darkMode ? 'bg-gray-700' : 'bg-white'} rounded-lg border ${
+          className={`h-24 ${
+            settings.darkMode ? 'bg-gray-700' : 'bg-white'
+          } rounded-lg border ${
             settings.darkMode ? 'border-gray-600' : 'border-gray-200'
-          } p-1 md:p-2 hover:shadow-md transition-shadow ${
-            isToday ? 'ring-2 ring-purple-500' : ''
+          } p-2 hover:shadow-md transition-all cursor-pointer ${
+            isSelected
+              ? 'ring-2 ring-purple-500'
+              : isToday
+              ? 'ring-1 ring-purple-300'
+              : ''
           }`}
           onClick={() => {
             setSelectedDate(dateString);
-            setShowEventForm(true);
+            setIsDrawerOpen(true);
           }}
         >
-          <div className={`text-sm md:text-base font-semibold ${isToday ? 'text-purple-500' : settings.darkMode ? 'text-gray-200' : 'text-gray-900'}`}>{day}</div>
-          <div className="space-y-0.5 md:space-y-1 mt-0.5 md:mt-1 overflow-y-auto max-h-16 md:max-h-24">
-            {dayEvents.slice(0, isMobile ? 2 : 3).map(event => (
-              <div
-                key={event.id}
-                className={`text-xs p-1 md:p-1.5 rounded-lg border ${typeStyles[event.type]} cursor-pointer hover:opacity-80`}
-                title={event.description}
-              >
-                <div className="font-medium truncate flex items-center">
-                  {typeIcons[event.type]}
-                  {event.title}
-                </div>
-                {event.time && !isMobile && (
-                  <div className="text-xs opacity-75 flex items-center mt-0.5">
-                    <Clock size={10} className="mr-1" />
-                    {event.time}
-                  </div>
-                )}
-              </div>
-            ))}
-            {dayEvents.length > (isMobile ? 2 : 3) && (
-              <div className={`text-xs ${settings.darkMode ? 'text-gray-400' : 'text-gray-500'} text-center`}>
-                +{dayEvents.length - (isMobile ? 2 : 3)} more
-              </div>
-            )}
+          <div
+            className={`text-base font-semibold ${
+              isToday
+                ? 'text-purple-500'
+                : settings.darkMode
+                ? 'text-gray-200'
+                : 'text-gray-900'
+            }`}
+          >
+            {day}
           </div>
+          {dayEvents.length > 0 && (
+            <div className="flex space-x-1 mt-1">
+              {Array.from(new Set(dayEvents.map(event => event.type))).map(type => (
+                <div
+                  key={type}
+                  className={`w-1.5 h-1.5 rounded-full ${eventTypeStyles[type].dot}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       );
     }
@@ -190,67 +316,165 @@ export const CalendarView: React.FC = () => {
     return days;
   };
 
-  const handleDeleteEvent = (eventId: string) => {
-    LocalStorageManager.deleteEvent(eventId);
-    setEvents(prev => prev.filter(event => event.id !== eventId));
-  };
-
   return (
-    <div className={`max-w-6xl mx-auto px-2 md:px-4 py-4 md:py-6 ${settings.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}>
-      <header className="mb-4 md:mb-8 flex justify-between items-center">
+    <div
+      className={`max-w-6xl mx-auto px-4 py-6 ${
+        settings.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'
+      }`}
+    >
+      <header className="mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 text-transparent bg-clip-text">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text">
             Calendar
           </h1>
-          <p className={`text-sm md:text-base ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Plan and track your goals and events</p>
+          <p className={`text-base ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Plan and track your goals and events
+          </p>
         </div>
-        <button
-          onClick={() => {
-            setSelectedDate(new Date().toISOString().split('T')[0]);
-            setShowEventForm(true);
-          }}
-          className="flex items-center bg-gradient-to-r from-purple-600 to-orange-500 text-white px-3 md:px-4 py-2 rounded-lg hover:from-purple-700 hover:to-orange-600 transition-all text-sm md:text-base"
-        >
-          <Plus size={isMobile ? 16 : 20} className="mr-1 md:mr-2" />
-          Add Event
-        </button>
+        <div className="flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
+            {Object.entries(eventTypeStyles).map(([type, styles]) => (
+              <div key={type} className="flex items-center space-x-1">
+                <div className={`w-2 h-2 rounded-full ${styles.dot}`} />
+                <span className="text-sm capitalize">{type}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              setSelectedDate(new Date().toISOString().split('T')[0]);
+              setDrawerMode('add');
+              setIsDrawerOpen(true);
+            }}
+            className="flex items-center bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+          >
+            <Plus size={20} className="mr-2" />
+            Add Event
+          </button>
+        </div>
       </header>
 
-      <div className={`${settings.darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-2 md:p-6`}>
-        <div className="flex justify-between items-center mb-4 md:mb-6">
+      <div
+        className={`${
+          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+        } rounded-xl shadow-lg p-6`}
+      >
+        <div className="flex justify-between items-center mb-6">
           <button
-            onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
-            className={`p-1 md:p-2 ${settings.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+            onClick={() =>
+              setCurrentDate(
+                new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+              )
+            }
+            className={`p-2 rounded-lg ${
+              settings.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+            } transition-colors`}
           >
-            <ChevronLeft size={isMobile ? 20 : 24} />
+            <ChevronLeft size={24} />
           </button>
-          <h2 className={`text-lg md:text-2xl font-semibold ${settings.darkMode ? 'text-purple-300' : 'text-purple-800'}`}>
-            {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          <h2
+            className={`text-2xl font-semibold ${
+              settings.darkMode ? 'text-purple-300' : 'text-purple-800'
+            }`}
+          >
+            {currentDate.toLocaleString('default', {
+              month: 'long',
+              year: 'numeric',
+            })}
           </h2>
           <button
-            onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
-            className={`p-1 md:p-2 ${settings.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
+            onClick={() =>
+              setCurrentDate(
+                new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+              )
+            }
+            className={`p-2 rounded-lg ${
+              settings.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+            } transition-colors`}
           >
-            <ChevronRight size={isMobile ? 20 : 24} />
+            <ChevronRight size={24} />
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 md:gap-4 mb-2 md:mb-4">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-            <div key={day} className={`font-semibold text-center ${settings.darkMode ? 'text-purple-300' : 'text-purple-800'} text-sm md:text-base`}>
-              {isMobile ? day : day + (day === 'S' ? 'un' : day === 'M' ? 'on' : 'ue')}
+        <div className="grid grid-cols-7 gap-4 mb-4">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div
+              key={day}
+              className={`font-semibold text-center ${
+                settings.darkMode ? 'text-purple-300' : 'text-purple-800'
+              }`}
+            >
+              {isMobile ? day.charAt(0) : day}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1 md:gap-4">
-          {renderCalendar()}
+        <div className="grid grid-cols-7 gap-4">{renderCalendar()}</div>
+      </div>
+
+      {/* Event List Section */}
+      <div
+        className={`mt-8 ${
+          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+        } rounded-xl shadow-lg p-6`}
+      >
+        <h3 className="text-xl font-semibold mb-4">Upcoming Events</h3>
+        <div className="space-y-4">
+          {events
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            .filter(
+              event =>
+                new Date(event.date).getTime() >= new Date().setHours(0, 0, 0, 0)
+            )
+            .slice(0, 5)
+            .map(event => (
+              <div
+                key={event.id}
+                className={`p-4 rounded-lg border ${eventTypeStyles[event.type].bg} ${
+                  eventTypeStyles[event.type].border
+                }`}
+                onClick={() => {
+                  setSelectedDate(event.date);
+                  setIsDrawerOpen(true);
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className={eventTypeStyles[event.type].text}>
+                      {typeIcons[event.type]}
+                    </span>
+                    <div>
+                      <h4 className="font-medium">{event.title}</h4>
+                      <p className="text-sm text-gray-500">
+                        {new Date(event.date).toLocaleDateString('default', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                        {event.time && ` • ${event.time}`}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={20}
+                    className={settings.darkMode ? 'text-gray-400' : 'text-gray-600'}
+                  />
+                </div>
+              </div>
+            ))}
         </div>
       </div>
 
-      {showEventForm && (
-        <EventForm onClose={() => setShowEventForm(false)} />
-      )}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <>
+            <div
+              className="fixed inset-0 bg-black bg-opacity-25 z-40"
+              onClick={() => setIsDrawerOpen(false)}
+            />
+            <EventDrawer onClose={() => setIsDrawerOpen(false)} />
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -5,10 +5,10 @@ import {
 } from 'react-feather';
 import { useSettings } from '../context/settings';
 
-const SettingsSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+const SettingsSection: React.FC<{ title: string; children: React.ReactNode, isDarkMode: boolean }> = ({ title, children, isDarkMode }) => (
   <div className="mb-8">
-    <h2 className="text-xl font-semibold text-purple-800 dark:text-purple-300 mb-4">{title}</h2>
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-6">
+    <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-purple-300' : 'text-purple-800'} mb-4`}>{title}</h2>
+    <div className={`rounded-lg shadow-md p-6 space-y-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
       {children}
     </div>
   </div>
@@ -19,7 +19,7 @@ export const Settings: React.FC = () => {
 
   const gradientButton = "bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600 text-white font-semibold py-2 px-4 rounded transition-all duration-200";
   const toggleClass = "relative inline-flex items-center h-6 rounded-full w-11 transition-colors";
-  const toggleHandle = "inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-800 transition-transform";
+  const toggleHandle = `inline-block h-4 w-4 transform rounded-full ${settings.darkMode ? 'bg-gray-800' : 'bg-white'} transition-transform`;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -27,16 +27,16 @@ export const Settings: React.FC = () => {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 text-transparent bg-clip-text">
           Settings
         </h1>
-        <p className="text-gray-600 dark:text-gray-300">Customize your HabitHub experience</p>
+        <p className={`text-gray-600 ${settings.darkMode ? 'text-gray-300' : ''}`}>Customize your HabitHub experience</p>
       </header>
 
-      <SettingsSection title="Appearance">
+      <SettingsSection title="Appearance" isDarkMode={settings.darkMode}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Moon className="mr-4 text-purple-600 dark:text-purple-300" />
+            <Moon className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Dark Mode</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Toggle dark theme</p>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Dark Mode</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Toggle dark theme</p>
             </div>
           </div>
           <button
@@ -48,13 +48,13 @@ export const Settings: React.FC = () => {
         </div>
       </SettingsSection>
 
-      <SettingsSection title="Notifications">
+      <SettingsSection title="Notifications" isDarkMode={settings.darkMode}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Bell className="mr-4 text-purple-600 dark:text-purple-300" />
+            <Bell className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Enable Notifications</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Receive reminders and updates</p>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Enable Notifications</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Receive reminders and updates</p>
             </div>
           </div>
           <button
@@ -66,13 +66,13 @@ export const Settings: React.FC = () => {
         </div>
       </SettingsSection>
 
-      <SettingsSection title="Reminders">
+      <SettingsSection title="Reminders" isDarkMode={settings.darkMode}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <RefreshCw className="mr-4 text-purple-600 dark:text-purple-300" />
+            <RefreshCw className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Daily Reminders</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Get notified daily about your habits</p>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Daily Reminders</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Get notified daily about your habits</p>
             </div>
           </div>
           <button
@@ -85,10 +85,10 @@ export const Settings: React.FC = () => {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Award className="mr-4 text-purple-600 dark:text-purple-300" />
+            <Award className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Weekly Reviews</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Review your weekly progress</p>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Weekly Reviews</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Review your weekly progress</p>
             </div>
           </div>
           <button
@@ -100,13 +100,13 @@ export const Settings: React.FC = () => {
         </div>
       </SettingsSection>
 
-      <SettingsSection title="General">
+      <SettingsSection title="General" isDarkMode={settings.darkMode}>
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <HelpCircle className="mr-4 text-purple-600 dark:text-purple-300" />
+            <HelpCircle className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Chat Assistant</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Enable assistant for habit guidance</p>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Chat Assistant</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Enable assistant for habit guidance</p>
             </div>
           </div>
           <button
@@ -119,10 +119,10 @@ export const Settings: React.FC = () => {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Database className="mr-4 text-purple-600 dark:text-purple-300" />
+            <Database className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Data Backup</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Keep your data safe</p>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Data Backup</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Keep your data safe</p>
             </div>
           </div>
           <button
@@ -135,10 +135,10 @@ export const Settings: React.FC = () => {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <MessageCircle className="mr-4 text-purple-600 dark:text-purple-300" />
+            <MessageCircle className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
             <div>
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Motivational Quotes</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Enable daily motivational quotes</p>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Motivational Quotes</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Enable daily motivational quotes</p>
             </div>
           </div>
           <button

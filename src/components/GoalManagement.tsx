@@ -13,8 +13,8 @@ const GoalForm: React.FC<{
   categories: Category[];
   metrics: Metric[];
   isDarkMode: boolean;
-}> = ({ onSubmit, onCancel, initialData, categories, metrics,isDarkMode }) => {
-
+}> = ({ onSubmit, onCancel, initialData, categories, metrics, isDarkMode }) => {
+  
   const [formData, setFormData] = useState<Partial<Goal>>({
     title: initialData?.title || '',
     description: initialData?.description || '',
@@ -33,7 +33,7 @@ const GoalForm: React.FC<{
   const buttonClasses = isDarkMode ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-gradient-to-r from-purple-600 to-orange-500 text-white hover:from-purple-700 hover:to-orange-600';
 
   return (
-    <div className={`p-6 rounded-lg shadow-lg ${containerClasses}`}>
+    <div className={`p-6 rounded-lg shadow-lg ${containerClasses} h-[70vh] overflow-y-auto`}>
       <h3 className="text-xl font-semibold mb-4 text-purple-800">
         {initialData ? 'Edit Goal' : 'Create New Goal'}
       </h3>

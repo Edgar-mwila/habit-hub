@@ -40,9 +40,21 @@
     }
   },
   "description": "Comprehensive goal-tracking and personal development application",
-  "displayName": "HabitHub",
+  "displayName": "Habit Hub",
   "keywords": [
-    "ecosystem:cordova"
+    "ecosystem:cordova",
+    "goal tracking",
+    "habit tracker",
+    "productivity",
+    "task management",
+    "goal setting",
+    "personal development",
+    "progress tracker",
+    "daily goals",
+    "app for habits",
+    "goal management",
+    "calendar",
+    "scheduler"
   ],
   "license": "Apache-2.0",
   "scripts": {
@@ -54,11 +66,13 @@
   "dependencies": {
     "@nanostores/react": "ai/react",
     "ai": "^4.0.22",
+    "framer-motion": "^11.15.0",
     "lucide-react": "^0.469.0",
     "react": "19",
     "react-dom": "19",
     "react-feather": "^2.0.10",
     "react-router-dom": "^7.1.1",
+    "sharp": "^0.33.5",
     "style-loader": "^4.0.0"
   }
 }
