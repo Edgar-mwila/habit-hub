@@ -1,43 +1,77 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart2, PieChart } from 'lucide-react';
+import { AnalyticsService } from '../services/AnalyticsService';
+import { LocalStorageManager } from '../services/LocalStorageManager';
+import { Goal, Category } from '../types';
+import { useSettings } from '../context/settings';
 
-type CategoryData = {
-  category: string;
-  completed: number;
-  total: number;
-  streak: number;
-};
+export const Analytics = () => {
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<any[]>([]);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const { settings } = useSettings();
 
-export const Analytics: React.FC = () => {
+  useEffect(() => {
+    const storedGoals = LocalStorageManager.getGoals();
+    const storedCategories = LocalStorageManager.getCategories();
+    setGoals(storedGoals);
+    setCategories(storedCategories);
 
-  const completionRate: number = 75;
-  const categoryData: CategoryData[] = [
-    { category: 'Health', completed: 8, total: 10, streak: 5 },
-    { category: 'Career', completed: 6, total: 8, streak: 3 },
-    { category: 'Personal', completed: 4, total: 5, streak: 2 },
-    { category: 'Finance', completed: 3, total: 6, streak: 1 },
-  ];
+    // Calculate analytics data
+    const data = storedCategories.map(category => ({
+      category: category.name,
+      color: category.color,
+      progress: AnalyticsService.calculateCategoryProgress(storedGoals, category.name),
+      totalGoals: storedGoals.filter(goal => goal.category === category.name).length,
+      completedGoals: storedGoals.filter(
+        goal => goal.category === category.name && goal.status === 'completed'
+      ).length,
+      streak: AnalyticsService.getStreakCount(
+        storedGoals.filter(goal => goal.category === category.name)
+      )
+    }));
 
-  const getMotivationalMessage = (completion: number): string => {
-    if (completion >= 80) return "Outstanding progress! You're crushing it! 🌟";
-    if (completion >= 60) return "Great work! Keep up the momentum! 💪";
-    if (completion >= 40) return "You're making steady progress! Keep going! 🎯";
-    return "Every step counts! You've got this! 🌱";
-  };
+    setAnalyticsData(data);
+
+    // Calculate overall progress
+    const totalProgress = data.reduce((sum, cat) => sum + cat.progress, 0);
+    setOverallProgress(Math.round(totalProgress / (data.length || 1)));
+  }, []);
 
   return (
-    <div className="max-w-6xl mx-auto p-6" style={{ background: 'linear-gradient(to bottom right, #FFEFDB, #C79DD7)' }}>
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold text-purple-800">Your Progress Journey</h1>
-        <p className="text-lg text-orange-700">Tracking your path to success</p>
+    <div className={`max-w-6xl mx-auto p-6 space-y-8 min-h-screen ${
+      settings.darkMode 
+        ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' 
+        : 'bg-gradient-to-b from-purple-50 to-orange-50'
+    }`}>
+      <header className="text-center py-8">
+        <h1 className={`text-4xl font-bold bg-gradient-to-r ${
+          settings.darkMode 
+            ? 'from-purple-400 to-orange-400' 
+            : 'from-purple-800 to-orange-600'
+        } bg-clip-text text-transparent`}>
+          Analytics Dashboard
+        </h1>
+        <p className={`text-lg mt-2 ${
+          settings.darkMode ? 'text-gray-300' : 'text-gray-600'
+        }`}>
+          Track your progress across all categories
+        </p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Progress Overview Card */}
-        <div className="p-6 rounded-lg shadow-lg bg-white">
-          <h2 className="text-2xl font-bold flex items-center text-purple-800 mb-4">
-            <BarChart2 className="mr-2 text-orange-500" /> Progress Overview
-          </h2>
+        <div className={`rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 ${
+          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+        }`}>
+          <div className="flex items-center gap-2 mb-6">
+            <BarChart2 className="text-orange-500" size={24} />
+            <h2 className={`text-2xl font-semibold ${
+              settings.darkMode ? 'text-purple-300' : 'text-purple-800'
+            }`}>
+              Overall Progress
+            </h2>
+          </div>
           <div className="relative w-48 h-48 mx-auto">
             <svg className="w-full h-full transform -rotate-90">
               <circle
@@ -45,7 +79,7 @@ export const Analytics: React.FC = () => {
                 cy="96"
                 r="88"
                 fill="none"
-                stroke="#FFEFDB"
+                stroke={settings.darkMode ? '#374151' : '#f3e8ff'}
                 strokeWidth="12"
               />
               <circle
@@ -53,43 +87,87 @@ export const Analytics: React.FC = () => {
                 cy="96"
                 r="88"
                 fill="none"
-                stroke="#C084FC"
+                stroke="url(#progressGradient)"
                 strokeWidth="12"
-                strokeDasharray={`${2 * Math.PI * 88 * completionRate / 100} ${2 * Math.PI * 88}`}
+                strokeDasharray={`${(2 * Math.PI * 88 * overallProgress) / 100} ${2 * Math.PI * 88}`}
+                className="transition-all duration-1000 ease-out"
               />
+              <defs>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={settings.darkMode ? '#b794f4' : '#9333ea'} />
+                  <stop offset="100%" stopColor={settings.darkMode ? '#f6ad55' : '#ea580c'} />
+                </linearGradient>
+              </defs>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-4xl font-bold text-purple-700">{completionRate}%</span>
+              <span className={`text-4xl font-bold bg-gradient-to-r ${
+                settings.darkMode 
+                  ? 'from-purple-400 to-orange-400' 
+                  : 'from-purple-700 to-orange-600'
+              } bg-clip-text text-transparent`}>
+                {overallProgress}%
+              </span>
             </div>
           </div>
-          <p className="text-center mt-4 text-orange-600 font-medium">
-            {getMotivationalMessage(completionRate)}
+          <p className={`text-center mt-6 font-medium ${
+            settings.darkMode ? 'text-purple-300' : 'text-purple-700'
+          }`}>
+            {AnalyticsService.generateMotivationalMessage(overallProgress)}
           </p>
         </div>
 
-        {/* Category Progress Card */}
-        <div className="p-6 rounded-lg shadow-lg bg-white">
-          <h2 className="text-2xl font-bold flex items-center text-purple-800 mb-4">
-            <PieChart className="mr-2 text-orange-500" /> Category Progress
-          </h2>
+        <div className={`rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 ${
+          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+        }`}>
+          <div className="flex items-center gap-2 mb-6">
+            <PieChart className="text-orange-500" size={24} />
+            <h2 className={`text-2xl font-semibold ${
+              settings.darkMode ? 'text-purple-300' : 'text-purple-800'
+            }`}>
+              Category Progress
+            </h2>
+          </div>
           <div className="space-y-6">
-            {categoryData.map(({ category, completed, total, streak }) => (
+            {analyticsData.map(({ category, color, progress, totalGoals, completedGoals, streak }) => (
               <div key={category} className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-purple-800">{category}</span>
-                  <div className="flex items-center">
-                    <span className="text-orange-600">{completed}/{total}</span>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full shadow-sm" 
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className={`font-medium ${
+                      settings.darkMode ? 'text-gray-200' : 'text-gray-800'
+                    }`}>
+                      {category}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`text-sm font-medium ${
+                      settings.darkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      {completedGoals}/{totalGoals} Goals
+                    </span>
                     {streak > 0 && (
-                      <span className="ml-2 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
-                        {streak} day streak! 🔥
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                        settings.darkMode 
+                          ? 'bg-gradient-to-r from-orange-900 to-purple-900 text-orange-300' 
+                          : 'bg-gradient-to-r from-orange-100 to-purple-100 text-orange-700'
+                      }`}>
+                        {streak}d 🔥
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="w-full bg-purple-100 rounded-full h-3">
+                <div className={`w-full rounded-full h-3 shadow-inner ${
+                  settings.darkMode ? 'bg-gray-700' : 'bg-gray-100'
+                }`}>
                   <div
-                    className="bg-gradient-to-r from-purple-500 to-orange-400 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${(completed / total) * 100}%` }}
+                    className="h-3 rounded-full transition-all duration-500 shadow-sm"
+                    style={{ 
+                      width: `${progress}%`,
+                      background: `linear-gradient(to right, ${color}, ${color}dd)`
+                    }}
                   />
                 </div>
               </div>

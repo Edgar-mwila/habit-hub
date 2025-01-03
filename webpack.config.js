@@ -5,7 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'production',
-  entry: './src/index.ts', // Entry point updated to TypeScript file
+  entry: './src/index.tsx', // Entry point updated to TypeScript file
   output: {
     path: path.resolve(__dirname, 'www'),
     filename: 'bundle.js',
