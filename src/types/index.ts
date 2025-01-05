@@ -67,7 +67,8 @@ export interface User {
     { id: '1', name: 'Career', color: '#4F46E5', icon: 'briefcase' },
     { id: '2', name: 'Finance', color: '#10B981', icon: 'dollar-sign' },
     { id: '3', name: 'Health', color: '#EF4444', icon: 'heart' },
-    { id: '4', name: 'Personal', color: '#F59E0B', icon: 'user' }
+    { id: '4', name: 'Personal', color: '#F59E0B', icon: 'user' },
+    { id: '5', name: 'Education', color: '#4CAF50', icon: 'book'}
   ];
   
   export const DEFAULT_METRICS: Metric[] = [
@@ -78,3 +79,30 @@ export interface User {
     { id: '5', name: 'Time', type: 'time', unit: 'minutes' },
     { id: '6', name: 'Pages', type: 'pages' }
   ];
+
+  export interface TodoItem {
+    id: string;
+    title: string;
+    description?: string;
+    dueDate: string;
+    dueTime?: string;
+    reminderTime?: string;
+    status: 'pending' | 'completed' | 'failed';
+    isRecurring?: boolean;
+    recurrencePattern?: {
+      frequency: 'daily' | 'weekly' | 'monthly';
+      days?: number[];  // for weekly, which days (0-6)
+      date?: number;    // for monthly, which date (1-31)
+    };
+    createdAt: string;
+    completedAt?: string;
+    notificationTime?: string;
+  }
+  
+  export interface TodoList {
+    id: string;
+    date: string;
+    items: TodoItem[];
+    morningNotificationTime: string;
+    eveningNotificationTime: string;
+  }

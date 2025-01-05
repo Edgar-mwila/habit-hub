@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { LocalStorageManager } from '../services/LocalStorageManager';
 
-interface Settings {
+export interface Settings {
   darkMode: boolean;
   notifications: boolean;
   dailyReminders: boolean;
@@ -9,6 +10,8 @@ interface Settings {
   language: string;
   dataBackup: boolean;
   motivationalQuotes: boolean;
+  todoListMorningNotificationTime: string, 
+  todoListEveningNotificationTime: string, 
 }
 
 interface SettingsContextType {
@@ -16,7 +19,7 @@ interface SettingsContextType {
   updateSetting: (key: keyof Settings, value: boolean | string) => void;
 }
 
-const defaultSettings: Settings = {
+export const defaultSettings: Settings = {
   darkMode: false,
   notifications: true,
   dailyReminders: true,
@@ -25,6 +28,8 @@ const defaultSettings: Settings = {
   language: 'English',
   dataBackup: true,
   motivationalQuotes: true,
+  todoListMorningNotificationTime: '07:00', 
+  todoListEveningNotificationTime: '07:00', 
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -32,8 +37,14 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
+  useEffect(() => {
+    const settings = LocalStorageManager.getSettings();
+    setSettings(settings);
+  }, [])
+
   const updateSetting = (key: keyof Settings, value: boolean | string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
+    LocalStorageManager.saveSettings(settings);
   };
 
   return (

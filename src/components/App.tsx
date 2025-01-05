@@ -9,6 +9,9 @@ import { Settings } from './Settings';
 import { About } from './About';
 import { Chat } from './Chat';
 import { useSettings } from '../context/settings';
+import { TodoListView } from './TodoListView';
+import { TodoAnalytics } from './TodoAnalytics';
+import { ListTodo } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -98,6 +101,7 @@ export const App: React.FC = () => {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/about" element={<About />} />
+            <Route path="/todo" element={<TodoListView />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
@@ -110,21 +114,35 @@ export const App: React.FC = () => {
             ? 'bg-gray-800 shadow-gray-900/50'
             : 'bg-white'
           } shadow-lg transition-colors duration-300`}>
-          <div className="flex justify-around items-center h-16">
-            <NavItem
-              icon={<Home size={24} />}
-              to="/"
-              label="Dashboard"
-              isActive={activeTab === 'dashboard'}
-              onClick={() => setActiveTab('dashboard')}
-              isDarkMode={settings.darkMode}
-            />
+          <div className="flex justify-around items-center h-16 relative">
+            {/* Dashboard Center Highlight */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-2 bg-purple-500 rounded-full shadow-lg p-4">
+              <NavItem
+                icon={<Home size={28} />}
+                to="/"
+                label="Dashboard"
+                isActive={activeTab === 'dashboard'}
+                onClick={() => setActiveTab('dashboard')}
+                isDarkMode={settings.darkMode}
+                isCenter
+              />
+            </div>
+
+            {/* Other Navigation Items */}
             <NavItem
               icon={<Target size={24} />}
               to="/goals"
-              label="Goals"
+              label="Goal"
               isActive={activeTab === 'goals'}
               onClick={() => setActiveTab('goals')}
+              isDarkMode={settings.darkMode}
+            />
+            <NavItem
+              icon={<ListTodo size={24} />}
+              to="/todo"
+              label="To Do"
+              isActive={activeTab === 'todo'}
+              onClick={() => setActiveTab('todo')}
               isDarkMode={settings.darkMode}
             />
             <NavItem
@@ -157,12 +175,23 @@ interface NavItemProps {
   isActive: boolean;
   onClick: () => void;
   isDarkMode: boolean;
+  isCenter?: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, to, label, isActive, onClick, isDarkMode }) => (
+const NavItem: React.FC<NavItemProps> = ({ 
+  icon, 
+  to, 
+  label, 
+  isActive, 
+  onClick, 
+  isDarkMode, 
+  isCenter 
+}) => (
   <Link
     to={to}
-    className={`flex flex-col items-center p-2 transition-colors duration-300 ${
+    className={`flex flex-col items-center ${
+      isCenter ? 'text-white' : ''
+    } p-2 transition-colors duration-300 ${
       isActive
         ? isDarkMode 
           ? 'text-purple-400'
@@ -174,7 +203,8 @@ const NavItem: React.FC<NavItemProps> = ({ icon, to, label, isActive, onClick, i
     onClick={onClick}
   >
     {icon}
-    <span className="text-xs mt-1">{label}</span>
+    {!isCenter && <span className="text-xs mt-1">{label}</span>}
   </Link>
 );
+
 

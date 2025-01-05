@@ -1,4 +1,5 @@
-import { Goal, Progress, User, Category, Event, DEFAULT_CATEGORIES, Metric, DEFAULT_METRICS } from "../types";
+import { defaultSettings, Settings } from "../context/settings";
+import { Goal, Progress, User, Category, Event, DEFAULT_CATEGORIES, Metric, DEFAULT_METRICS, TodoList, TodoItem } from "../types";
 
 export class LocalStorageManager {
   private static readonly STORAGE_KEYS = {
@@ -6,7 +7,9 @@ export class LocalStorageManager {
     USER: 'habitHub_user',
     CATEGORIES: 'habitHub_categories',
     EVENTS: 'habitHub_events',
-    METRICS: 'habitHub_metrics'
+    METRICS: 'habitHub_metrics',
+    TODOS: 'habitHub_todos',
+    SETTINGS: 'habitHub_settings',
   };
 
   // Goal Management
@@ -63,6 +66,40 @@ export class LocalStorageManager {
     this.saveEvents(updatedEvents);
   }
 
+  //to do list
+  static saveTodoLists(todos: TodoList[]): void {
+    localStorage.setItem(this.STORAGE_KEYS.TODOS, JSON.stringify(todos));
+  }
+  
+  static getTodoLists(): TodoList[] {
+    const todos = localStorage.getItem(this.STORAGE_KEYS.TODOS);
+    return todos ? JSON.parse(todos) : [];
+  }
+  
+  static addTodoItem(listId: string, item: TodoItem): void {
+    const lists = this.getTodoLists();
+    const listIndex = lists.findIndex(list => list.id === listId);
+    if (listIndex !== -1) {
+      lists[listIndex].items.push(item);
+      this.saveTodoLists(lists);
+    }
+  }
+  
+  static updateTodoItem(listId: string, itemId: string, updates: Partial<TodoItem>): void {
+    const lists = this.getTodoLists();
+    const listIndex = lists.findIndex(list => list.id === listId);
+    if (listIndex !== -1) {
+      const itemIndex = lists[listIndex].items.findIndex(item => item.id === itemId);
+      if (itemIndex !== -1) {
+        lists[listIndex].items[itemIndex] = {
+          ...lists[listIndex].items[itemIndex],
+          ...updates,
+        };
+        this.saveTodoLists(lists);
+      }
+    }
+  }
+
   // User Management
   static saveUser(user: User): void {
     localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
@@ -93,6 +130,16 @@ export class LocalStorageManager {
     return metrics ? JSON.parse(metrics) : DEFAULT_METRICS;
   }
 
+  // Settings Management
+  static saveSettings(settings: Settings): void {
+    localStorage.setItem(this.STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+  }
+
+  static getSettings(): Settings {
+    const settings = localStorage.getItem(this.STORAGE_KEYS.SETTINGS);
+    return settings ? JSON.parse(settings) : defaultSettings;
+  }
+
   // Utility Functions
   static clearAll(): void {
     Object.values(this.STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
@@ -105,6 +152,7 @@ export class LocalStorageManager {
       categories: this.getCategories(),
       events: this.getEvents(),
       metrics: this.getMetrics(),
+      todos: this.getTodoLists(),
     };
     return JSON.stringify(data);
   }
@@ -116,6 +164,7 @@ export class LocalStorageManager {
       if (data.user) this.saveUser(data.user);
       if (data.categories) this.saveCategories(data.categories);
       if (data.metrics) this.saveMetrics(data.metrics);
+      if (data.todos) this.saveTodoLists(data.todos);
     } catch (error) {
       console.error('Error importing data:', error);
       throw new Error('Invalid import data format');

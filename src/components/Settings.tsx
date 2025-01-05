@@ -4,6 +4,8 @@ import {
   MessageCircle, Award, User
 } from 'react-feather';
 import { useSettings } from '../context/settings';
+import { AnalogTimePicker } from './AnalogTimeSelector';
+import { AlarmClock } from 'lucide-react';
 
 const SettingsSection: React.FC<{ title: string; children: React.ReactNode, isDarkMode: boolean }> = ({ title, children, isDarkMode }) => (
   <div className="mb-8">
@@ -97,6 +99,36 @@ export const Settings: React.FC = () => {
           >
             <span className={`${toggleHandle} ${settings.weeklyReviews ? 'translate-x-6' : 'translate-x-1'}`} />
           </button>
+        </div>
+
+        <div className="ml-12 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <AlarmClock className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
+              <div>
+                <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Morning Todo</h3>
+                <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Set your morning reminder time</p>
+              </div>
+            </div>
+            <AnalogTimePicker 
+              value={settings.todoListMorningNotificationTime || '08:00'}
+              onChange={(time) => updateSetting('todoListMorningNotificationTime', time)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <AlarmClock className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
+              <div>
+                <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Evening Todo</h3>
+                <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Set your evening reminder time</p>
+              </div>
+            </div>
+            <AnalogTimePicker 
+              value={settings.todoListEveningNotificationTime || '20:00'}
+              onChange={(time) => updateSetting('todoListEveningNotificationTime', time)}
+            />
+          </div>
         </div>
       </SettingsSection>
 

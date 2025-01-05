@@ -4,6 +4,7 @@ import { AnalyticsService } from '../services/AnalyticsService';
 import { LocalStorageManager } from '../services/LocalStorageManager';
 import { Goal, Category } from '../types';
 import { useSettings } from '../context/settings';
+import { TodoAnalytics } from './TodoAnalytics';
 
 export const Analytics = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -60,12 +61,15 @@ export const Analytics = () => {
         </p>
       </header>
 
+      <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text mb-6">
+        Goal Analytics
+      </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className={`rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 ${
           settings.darkMode ? 'bg-gray-800' : 'bg-white'
         }`}>
           <div className="flex items-center gap-2 mb-6">
-            <BarChart2 className="text-orange-500" size={24} />
+            <PieChart className="text-orange-500" size={24} />
             <h2 className={`text-2xl font-semibold ${
               settings.darkMode ? 'text-purple-300' : 'text-purple-800'
             }`}>
@@ -120,7 +124,7 @@ export const Analytics = () => {
           settings.darkMode ? 'bg-gray-800' : 'bg-white'
         }`}>
           <div className="flex items-center gap-2 mb-6">
-            <PieChart className="text-orange-500" size={24} />
+            <BarChart2 className="text-orange-500" size={24} />
             <h2 className={`text-2xl font-semibold ${
               settings.darkMode ? 'text-purple-300' : 'text-purple-800'
             }`}>
@@ -175,6 +179,7 @@ export const Analytics = () => {
           </div>
         </div>
       </div>
+      <TodoAnalytics />
     </div>
   );
 };
