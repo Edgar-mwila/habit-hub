@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
 import { Home, Target, Calendar, BarChart2, Settings as SettingsIcon, MessageCircle, MoreVertical } from 'react-feather';
 import { Dashboard } from './Dashboard';
-import { GoalManagement } from './GoalManagement';
+import { GoalManagementPage } from './GoalManagement';
 import { CalendarView } from './CalendarView';
 import { Analytics } from './Analytics';
 import { Settings } from './Settings';
@@ -93,7 +93,7 @@ export const App: React.FC = () => {
         <main className="flex-grow overflow-auto pt-16 pb-16">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/goals" element={<GoalManagement />} />
+            <Route path="/goals" element={<GoalManagementPage />} />
             <Route path="/calendar" element={<CalendarView />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/settings" element={<Settings />} />

@@ -24,15 +24,24 @@ export class LocalStorageManager {
     const goalIndex = goals.findIndex(g => g.id === goalId);
     
     if (goalIndex !== -1) {
-      goals[goalIndex].progressHistory.push(progress);
-      goals[goalIndex].currentProgress = progress.value;
+      const goal = goals[goalIndex];
+      goal.progressHistory.push(progress);
+      goal.currentProgress = progress.value;
       
       // Update status based on progress
-      const progressPercentage = (progress.value / goals[goalIndex].target) * 100;
+      const progressPercentage = (progress.value / goal.target) * 100;
       if (progressPercentage >= 100) {
-        goals[goalIndex].status = 'completed';
+        goal.status = 'completed';
       } else if (progressPercentage > 0) {
-        goals[goalIndex].status = 'in-progress';
+        goal.status = 'in-progress';
+      }
+      
+      // Update recurrence for recurring goals
+      if (goal.recurrence) {
+        goal.recurrence.completed += 1;
+        if (goal.recurrence.completed >= goal.recurrence.target) {
+          goal.recurrence.completed = 0; // Reset for next period
+        }
       }
       
       this.saveGoals(goals);

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .goal-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+        }
+        
+        .add-goal-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .recurring-days {
+            display: none;
+        }
+        
+        .recurring-days.visible {
+            display: block;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .checkbox-group label {
+            font-weight: normal;
+        }
+        
+        .task-list {
+            margin-top: 10px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Goal Tracker</h1>
+    
+    <div class="add-goal-form">
+        <h2>Add New Goal</h2>
+        <form id="goalForm">
+            <div class="form-group">
+                <label for="title">Goal Title:</label>
+                <input type="text" id="title" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="type">Goal Type:</label>
+                <select id="type" required>
+                    <option value="quantitative">Quantitative</option>
+                    <option value="qualitative">Qualitative</option>
+                    <option value="recurring">Recurring</option>
+                    <option value="hybrid">Hybrid</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Category:</label>
+                <select id="category" required>
+                    <option value="Financial">Financial</option>
+                    <option value="Health">Health</option>
+                    <option value="Education">Education</option>
+                    <option value="Career">Career</option>
+                </select>
+            </div>
+            
+            <div class="form-group quantitative-fields">
+                <label for="total">Target Value:</label>
+                <input type="number" id="total" min="0">
+                
+                <label for="unit">Unit:</label>
+                <input type="text" id="unit" placeholder="e.g., USD, pages, etc.">
+            </div>
+            
+            <div class="form-group recurring-fields">
+                <label for="frequency">Frequency:</label>
+                <select id="frequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+                
+                <div id="recurringDays" class="recurring-days">
+                    <label>Select Days:</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="days" value="Monday"> Monday</label>
+                        <label><input type="checkbox" name="days" value="Wednesday"> Wednesday</label>
+                        <label><input type="checkbox" name="days" value="Friday"> Friday</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit">Add Goal</button>
+        </form>
+    </div>
+    
+    <div class="dashboard" id="goalsDashboard"></div>
+
+    <script>
+        // Store goals in localStorage
+        let goals = JSON.parse(localStorage.getItem('goals') || '[]');
+        
+        // Form handling
+        const goalForm = document.getElementById('goalForm');
+        const typeSelect = document.getElementById('type');
+        const recurringDays = document.getElementById('recurringDays');
+        const frequencySelect = document.getElementById('frequency');
+        
+        // Show/hide fields based on goal type
+        typeSelect.addEventListener('change', () => {
+            const type = typeSelect.value;
+            document.querySelector('.quantitative-fields').style.display = 
+                (type === 'quantitative' || type === 'hybrid') ? 'block' : 'none';
+            document.querySelector('.recurring-fields').style.display = 
+                (type === 'recurring' || type === 'hybrid') ? 'block' : 'none';
+        });
+        
+        frequencySelect.addEventListener('change', () => {
+            recurringDays.classList.toggle('visible', frequencySelect.value === 'weekly');
+        });
+        
+        // Handle form submission
+        goalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newGoal = {
+                id: Date.now().toString(),
+                title: document.getElementById('title').value,
+                type: typeSelect.value,
+                category: document.getElementById('category').value,
+                status: 'in-progress',
+                metrics: {},
+                recurrence: {}
+            };
+            
+            if (newGoal.type === 'quantitative' || newGoal.type === 'hybrid') {
+                newGoal.metrics = {
+                    total: parseInt(document.getElementById('total').value),
+                    current: 0,
+                    unit: document.getElementById('unit').value
+                };
+            }
+            
+            if (newGoal.type === 'recurring' || newGoal.type === 'hybrid') {
+                const selectedDays = Array.from(document.querySelectorAll('input[name="days"]:checked'))
+                    .map(cb => cb.value);
+                
+                newGoal.recurrence = {
+                    frequency: frequencySelect.value,
+                    days: selectedDays,
+                    target: selectedDays.length,
+                    completed: 0
+                };
+            }
+            
+            goals.push(newGoal);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            renderGoals();
+            goalForm.reset();
+        });
+        
+        // Render goals in dashboard
+        function renderGoals() {
+            const dashboard = document.getElementById('goalsDashboard');
+            dashboard.innerHTML = '';
+            
+            goals.forEach(goal => {
+                const card = document.createElement('div');
+                card.className = 'goal-card';
+                
+                let progressHtml = '';
+                if (goal.metrics.total) {
+                    const progress = (goal.metrics.current / goal.metrics.total) * 100;
+                    progressHtml = `
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <p>${goal.metrics.current} / ${goal.metrics.total} ${goal.metrics.unit}</p>
+                    `;
+                }
+                
+                let recurringHtml = '';
+                if (goal.recurrence.frequency) {
+                    recurringHtml = `
+                        <p>Frequency: ${goal.recurrence.frequency}</p>
+                        <p>Completed: ${goal.recurrence.completed} / ${goal.recurrence.target}</p>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <h3>${goal.title}</h3>
+                    <p>Type: ${goal.type}</p>
+                    <p>Category: ${goal.category}</p>
+                    <p>Status: ${goal.status}</p>
+                    ${progressHtml}
+                    ${recurringHtml}
+                    ${goal.type !== 'qualitative' ? `
+                        <button onclick="updateProgress('${goal.id}')">Update Progress</button>
+                    ` : ''}
+                    <button onclick="deleteGoal('${goal.id}')">Delete</button>
+                `;
+                
+                dashboard.appendChild(card);
+            });
+        }
+        
+        // Update goal progress
+        function updateProgress(goalId) {
+            const goal = goals.find(g => g.id === goalId);
+            if (!goal) return;
+            
+            if (goal.metrics.total) {
+                const progress = prompt('Enter current progress:', goal.metrics.current);
+                if (progress !== null) {
+                    goal.metrics.current = parseInt(progress);
+                }
+            }
+            
+            if (goal.recurrence.target) {
+                const completed = prompt('Enter completed sessions:', goal.recurrence.completed);
+                if (completed !== null) {
+                    goal.recurrence.completed = parseInt(completed);
+                }
+            }
+            
+            localStorage.setItem('goals', JSON.stringify(goals));
+            renderGoals();
+        }
+        
+        // Delete goal
+        function deleteGoal(goalId) {
+            if (confirm('Are you sure you want to delete this goal?')) {
+                goals = goals.filter(g => g.id !== goalId);
+                localStorage.setItem('goals', JSON.stringify(goals));
+                renderGoals();
+            }
+        }
+        
+        // Initial render
+        renderGoals();
+    </script>
+</body>
+</html>
