@@ -75,7 +75,7 @@ export const CalendarView = () => {
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className={`fixed inset-y-0 right-0 w-full md:w-96 ${
-          settings.darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+          settings.darkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-900'
         } shadow-xl z-50 overflow-hidden flex flex-col`}
       >
         <div className="p-4 border-b flex justify-between items-center">
@@ -92,7 +92,7 @@ export const CalendarView = () => {
                 onClick={() => setDrawerMode('view')}
                 className={`px-3 py-1 rounded-full text-sm ${
                   drawerMode === 'view'
-                    ? 'bg-purple-500 text-white'
+                    ? 'bg-purple-500 text-purple-200'
                     : settings.darkMode
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -104,7 +104,7 @@ export const CalendarView = () => {
                 onClick={() => setDrawerMode('add')}
                 className={`px-3 py-1 rounded-full text-sm ${
                   drawerMode === 'add'
-                    ? 'bg-purple-500 text-white'
+                    ? 'bg-purple-500 text-purple-200'
                     : settings.darkMode
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -173,7 +173,7 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.title}
                   onChange={e => setNewEvent({ ...newEvent, title: e.target.value })}
@@ -183,7 +183,7 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.type}
                   onChange={e =>
@@ -198,7 +198,7 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.time}
                   onChange={e => setNewEvent({ ...newEvent, time: e.target.value })}
@@ -208,7 +208,7 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.description}
                   onChange={e =>
@@ -218,7 +218,7 @@ export const CalendarView = () => {
                 />
                 <button
                   type="submit"
-                  className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                  className="w-full bg-purple-500 text-purple-200 py-2 rounded-lg hover:bg-purple-600 transition-colors"
                 >
                   Add Event
                 </button>
@@ -265,8 +265,8 @@ export const CalendarView = () => {
         <div
           key={day}
           className={`h-16 ${
-            settings.darkMode ? 'bg-gray-700' : 'bg-white'
-          } rounded-lg border ${
+            settings.darkMode ? 'bg-gray-700' : 'bg-purple-200'
+          } border ${
             settings.darkMode ? 'border-gray-600' : 'border-gray-200'
           } p-2 hover:shadow-md transition-all cursor-pointer ${
             isSelected
@@ -311,7 +311,7 @@ export const CalendarView = () => {
   return (
     <div
       className={`max-w-6xl mx-auto px-4 py-6 ${
-        settings.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'
+        settings.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-purple-200 text-gray-900'
       }`}
     >
       <header className="mb-8 flex justify-between items-center">
@@ -338,7 +338,7 @@ export const CalendarView = () => {
               setDrawerMode('add');
               setIsDrawerOpen(true);
             }}
-            className="flex items-center bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+            className="flex items-center bg-purple-500 text-purple-200 px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
           >
             <Plus size={20} className="mr-2" />
             Add Event
@@ -348,7 +348,7 @@ export const CalendarView = () => {
 
       <div
         className={`${
-          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+          settings.darkMode ? 'bg-gray-800' : 'bg-purple-200'
         } rounded-xl shadow-lg p-6`}
       >
         <div className="flex justify-between items-center mb-6">
@@ -406,7 +406,7 @@ export const CalendarView = () => {
       {/* Event List Section */}
       <div
         className={`mt-8 ${
-          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+          settings.darkMode ? 'bg-gray-800' : 'bg-purple-200'
         } rounded-xl shadow-lg p-6`}
       >
         <h3 className="text-xl font-semibold mb-4">Upcoming Events</h3>

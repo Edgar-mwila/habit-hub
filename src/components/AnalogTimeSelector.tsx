@@ -43,7 +43,7 @@ export const AnalogTimePicker: React.FC<AnalogTimePickerProps> = ({ value, onCha
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4">
+        <div className="absolute z-50 mt-2 bg-purple-200 dark:bg-gray-800 rounded-lg shadow-lg p-4">
           <div
             className="relative w-52 h-52 rounded-full border-2 border-purple-600 cursor-pointer"
             onClick={handleTimeClick}

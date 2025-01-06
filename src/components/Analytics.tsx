@@ -28,7 +28,7 @@ export const Analytics = () => {
       completedGoals: storedGoals.filter(
         goal => goal.category === category.name && goal.status === 'completed'
       ).length,
-      streak: AnalyticsService.getStreakCount(
+      streak: AnalyticsService.getGoalStreak(
         storedGoals.filter(goal => goal.category === category.name)
       )
     }));
@@ -43,7 +43,7 @@ export const Analytics = () => {
   return (
     <div className={`max-w-6xl mx-auto p-6 space-y-8 min-h-screen ${
       settings.darkMode 
-        ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-white' 
+        ? 'bg-gradient-to-b from-gray-900 to-gray-800 text-purple-200' 
         : 'bg-gradient-to-b from-purple-50 to-orange-50'
     }`}>
       <header className="text-center py-8">
@@ -66,7 +66,7 @@ export const Analytics = () => {
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className={`rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 ${
-          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+          settings.darkMode ? 'bg-gray-800' : 'bg-purple-200'
         }`}>
           <div className="flex items-center gap-2 mb-6">
             <PieChart className="text-orange-500" size={24} />
@@ -121,7 +121,7 @@ export const Analytics = () => {
         </div>
 
         <div className={`rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300 ${
-          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+          settings.darkMode ? 'bg-gray-800' : 'bg-purple-200'
         }`}>
           <div className="flex items-center gap-2 mb-6">
             <BarChart2 className="text-orange-500" size={24} />

@@ -23,8 +23,8 @@ const GoalForm: React.FC<{
     reviewHistory: [],
   });
 
-  const containerClasses = isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black';
-  const inputClasses = isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300';
+  const containerClasses = isDarkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-black';
+  const inputClasses = isDarkMode ? 'bg-gray-700 text-purple-200 border-gray-600' : 'bg-purple-200 text-black border-gray-300';
 
   return (
     <div className={`p-6 rounded-lg shadow-lg ${containerClasses}`}>
@@ -73,13 +73,16 @@ const GoalForm: React.FC<{
           <option value="never">Manual Review Only</option>
         </select>
 
-        <input
-          type="date"
-          className={`w-full p-2 border rounded-md ${inputClasses}`}
-          value={formData.dueDate}
-          onChange={e => setFormData({...formData, dueDate: e.target.value})}
-          required
-        />
+        <label>
+          Due Date
+          <input
+            type="date"
+            className={`w-full p-2 border rounded-md ${inputClasses}`}
+            value={formData.dueDate}
+            onChange={e => setFormData({...formData, dueDate: e.target.value})}
+            required
+          />
+        </label>
 
         <div className="flex justify-end space-x-4">
           <button
@@ -91,7 +94,7 @@ const GoalForm: React.FC<{
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+            className="px-4 py-2 bg-purple-600 text-purple-200 rounded-md hover:bg-purple-700"
           >
             {initialData ? 'Update Goal' : 'Create Goal'}
           </button>
@@ -101,54 +104,176 @@ const GoalForm: React.FC<{
   );
 };
 
-const ReviewForm: React.FC<{
-  onSubmit: (review: Partial<Review>) => void;
-  onCancel: () => void;
-  goalId: string;
+interface ReviewDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (formData: FormData) => void;
+  goal: Goal;
   isDarkMode: boolean;
-}> = ({ onSubmit, onCancel, goalId, isDarkMode }) => {
-  const [formData, setFormData] = useState<Partial<Review>>({
-    goalId,
+}
+
+interface FormData {
+  goalId: string;
+  date: string;
+  value: number;
+  notes: string;
+}
+
+const ReviewDialog: React.FC<ReviewDialogProps> = ({ isOpen, onClose, onSubmit, goal, isDarkMode }) => {
+  const [formData, setFormData] = useState({
+    goalId: goal.id,
     date: new Date().toISOString(),
-    value: 0,
+    value: goal.currentProgress,
     notes: ''
   });
 
-  const inputClasses = isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300';
+  // Reset form data when dialog opens with a new goal
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        goalId: goal.id,
+        date: new Date().toISOString(),
+        value: goal.currentProgress,
+        notes: ''
+      });
+    }
+  }, [isOpen, goal]);
+
+  // Handle click outside to close
+  const handleBackdropClick = (e: React.UIEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  // Prevent event propagation for dialog content clicks
+  const handleDialogClick = (e: { stopPropagation: () => void; }) => {
+    e.stopPropagation();
+  };
+
+  const getDaysRemaining = () => {
+    const dueDate = new Date(goal.dueDate);
+    const today = new Date();
+    const diffTime = dueDate.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const handleSliderChange = (e: { stopPropagation: () => void; target: { value: string; }; }) => {
+    e.stopPropagation(); // Prevent event bubbling
+    setFormData(prev => ({ ...prev, value: parseInt(e.target.value) }));
+  };
+
+  const handleSubmit = (e: { preventDefault: () => void; stopPropagation: () => void; }) => {
+    e.preventDefault(); // Prevent form submission from closing dialog
+    e.stopPropagation(); // Prevent event bubbling
+    onSubmit(formData);
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div className="p-4 border rounded-lg shadow-sm space-y-4">
-      <input
-        type="number"
-        min="0"
-        max="100"
-        placeholder="Progress (%)"
-        className={`w-full p-2 border rounded-md ${inputClasses}`}
-        value={formData.value}
-        onChange={e => setFormData({...formData, value: Number(e.target.value)})}
-        required
-      />
-      
-      <textarea
-        placeholder="Review notes..."
-        className={`w-full p-2 border rounded-md ${inputClasses}`}
-        value={formData.notes}
-        onChange={e => setFormData({...formData, notes: e.target.value})}
-      />
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={handleBackdropClick}
+    >
+      <div 
+        className={`w-full max-w-md rounded-xl shadow-2xl ${
+          isDarkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-900'
+        } p-6 transform transition-all`}
+        onClick={handleDialogClick}
+      >
+        <form onSubmit={handleSubmit}>
+          {/* Header */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2">Update Progress</h2>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Track your progress for <span className="font-medium text-purple-500">{goal.title}</span>
+            </p>
+          </div>
 
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={onCancel}
-          className="px-3 py-1 text-gray-600 hover:text-gray-800"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => onSubmit(formData)}
-          className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-        >
-          Submit Review
-        </button>
+          {/* Goal Summary Card */}
+          <div className={`p-4 rounded-lg mb-6 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Current Progress</span>
+                <span className="font-medium">{goal.currentProgress}%</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>Days Remaining</span>
+                <span className="font-medium">{getDaysRemaining()} days</span>
+              </div>
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-purple-600 transition-all duration-300"
+                  style={{ width: `${goal.currentProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Slider */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">
+              New Progress: {formData.value}%
+            </label>
+            <div className="relative">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={formData.value}
+                onChange={handleSliderChange}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
+          </div>
+
+          {/* Notes Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">
+              Progress Notes
+            </label>
+            <textarea
+              placeholder="What progress did you make? Any challenges or insights?"
+              className={`w-full p-3 border rounded-lg resize-none h-24 transition-colors duration-200 ${
+                isDarkMode 
+                  ? 'bg-gray-700 border-gray-600 focus:border-purple-500' 
+                  : 'bg-purple-200 border-gray-300 focus:border-purple-500'
+              }`}
+              value={formData.notes}
+              onChange={e => {
+                e.stopPropagation();
+                setFormData({...formData, notes: e.target.value});
+              }}
+              onClick={e => e.stopPropagation()}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                isDarkMode
+                  ? 'text-gray-300 hover:text-purple-200 hover:bg-gray-700'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+              }`}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-purple-600 text-purple-200 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors duration-200"
+            >
+              Save Progress
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -276,7 +401,7 @@ export const GoalManagement: React.FC = () => {
   };
 
   return (
-    <div className={`max-w-6xl mx-auto p-6 space-y-8 ${settings.darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+    <div className={`max-w-6xl mx-auto space-y-8`}>
       {notifications.length > 0 && (
         <div className="space-y-2">
           {notifications.map((notification, index) => (
@@ -284,27 +409,11 @@ export const GoalManagement: React.FC = () => {
               key={index}
               className={`flex items-start p-4 mb-4 rounded-lg border ${
                 settings.darkMode
-                  ? 'bg-gray-800 border-purple-500 text-white'
+                  ? 'bg-gray-800 border-purple-500 text-purple-200'
                   : 'bg-purple-50 border-purple-200 text-gray-800'
               }`}
             >
-              <div className="flex-shrink-0">
-                {/* Replace this with an SVG or icon for AlertTriangle */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-purple-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"
-                  />
-                </svg>
-              </div>
+              <AlertTriangle className="h-4 w-4 text-purple-500"/>
               <div className="ml-3">
                 <p className="text-sm">{notification}</p>
               </div>
@@ -314,10 +423,10 @@ export const GoalManagement: React.FC = () => {
       )}
 
       <div className="flex justify-between items-center">
-        <h1 className={`text-2xl font-bold ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>Your Goals</h1>
+        <h1 className={`text-3xl font-bold ${settings.darkMode ? 'text-purple-200' : 'text-orange-800'}`}>Your Goals</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          className="flex items-center px-4 py-2 bg-purple-600 text-purple-200 rounded-lg hover:bg-purple-700"
         >
           <PlusCircle className="mr-2" size={20} />
           Add Goal
@@ -345,21 +454,17 @@ export const GoalManagement: React.FC = () => {
           const categoryGoals = goals.filter(goal => goal.category === category.name);
           
           return (
-            <div
-              key={category.id}
-              className={`p-4 rounded-lg shadow-sm border ${
-                settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'
-              }`}
-            >
               <div
-                className="cursor-pointer p-2 rounded-lg"
+                className={`cursor-pointer p-2 rounded-lg shadow-sm border ${
+                  settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-purple-200 border-gray-300'
+                }`}
                 onClick={() => toggleCategory(category.name)}
                 style={{ borderLeft: `4px solid ${category.color}` }}
               >
                 <div className="flex items-center justify-between">
                   <h3
                     className={`text-lg font-semibold flex items-center ${
-                      settings.darkMode ? 'text-white' : 'text-gray-900'
+                      settings.darkMode ? 'text-purple-200' : 'text-gray-900'
                     }`}
                   >
                     {category.name}
@@ -373,16 +478,14 @@ export const GoalManagement: React.FC = () => {
                     <ChevronDown size={20} />
                   )}
                 </div>
-              </div>
 
               {expandedCategories.includes(category.name) && (
                 <div className="mt-4 space-y-4">
                   {categoryGoals.map(goal => (
-                    <div key={goal.id} className={`p-4 border rounded-lg ${settings.darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}`}>
-                      {/* Continuing from the previous goal mapping section */}
+                    <div key={goal.id} className={`p-4 border rounded-lg ${settings.darkMode ? 'bg-gray-700 border-gray-600' : 'bg-purple-200 border-gray-200'}`}>
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <h3 className={`font-medium text-lg ${settings.darkMode ? 'text-white' : ''}`}>
+                          <h3 className={`font-medium text-lg ${settings.darkMode ? 'text-purple-200' : ''}`}>
                             {goal.title}
                           </h3>
                           <p className={`text-sm ${settings.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -425,8 +528,12 @@ export const GoalManagement: React.FC = () => {
                             Progress: {goal.currentProgress}%
                           </span>
                           <button
-                            onClick={() => setReviewingGoal(goal.id)}
-                            className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setReviewingGoal(goal.id)
+                              }
+                            }
+                            className="px-3 py-1 text-sm bg-purple-600 text-purple-200 rounded-md hover:bg-purple-700"
                           >
                             Add Review
                           </button>
@@ -434,10 +541,11 @@ export const GoalManagement: React.FC = () => {
 
                         {/* Review Form */}
                         {reviewingGoal === goal.id && (
-                          <ReviewForm
+                          <ReviewDialog
+                            isOpen={reviewingGoal === goal.id}
+                            onClose={() => setReviewingGoal(null)}
                             onSubmit={handleReviewSubmit}
-                            onCancel={() => setReviewingGoal(null)}
-                            goalId={goal.id}
+                            goal={goal}
                             isDarkMode={settings.darkMode}
                           />
                         )}

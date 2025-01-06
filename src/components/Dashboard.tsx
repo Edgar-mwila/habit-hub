@@ -42,7 +42,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   description,
   isDarkMode
 }) => (
-  <div className={`rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
+  <div className={`rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:scale-105 ${isDarkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-800'}`}>
     <div className="flex items-start justify-between mb-4">
       <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-purple-700' : 'bg-gradient-to-br from-purple-100 to-orange-100'}`}>
         {icon}
@@ -74,7 +74,7 @@ const ActiveGoal: React.FC<ActiveGoalProps> = ({ goal, isDarkMode }) => {
   };
 
   return (
-    <div className={`rounded-xl shadow-md p-6 transform transition-all duration-300 hover:shadow-lg ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
+    <div className={`rounded-xl shadow-md p-6 transform transition-all duration-300 hover:shadow-lg ${isDarkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-800'}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-lg font-semibold mb-1">{goal.title}</h3>
@@ -110,7 +110,7 @@ interface TodoItemProps {
 }
 
 const TodoItemComponent: React.FC<TodoItemProps> = ({ todo, isDarkMode }) => (
-  <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+  <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-purple-200'} shadow-sm`}>
     <div className="flex justify-between items-start">
       <div>
         <h4 className="font-medium">{todo.title}</h4>
@@ -138,7 +138,7 @@ interface EventItemProps {
 }
 
 const EventItemComponent: React.FC<EventItemProps> = ({ event, isDarkMode }) => (
-  <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+  <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-purple-200'} shadow-sm`}>
     <div className="flex justify-between items-start">
       <div>
         <h4 className="font-medium">{event.title}</h4>
@@ -221,21 +221,21 @@ export const Dashboard: React.FC = () => {
 
   const getActiveGoals = () => {
     return goals.filter(goal => 
-      goal.status === 'in-progress' && 
+      goal.currentProgress <= 100 && 
       new Date(goal.dueDate) > new Date()
     ).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
   };
 
   return (
-    <div className={`max-w-6xl mx-auto p-6 ${settings.darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
+    <div className={`max-w-6xl mx-auto p-6`}>
       <header className="mb-12">
         <p className="text-xl text-orange-600 mb-2">Good {getTimeOfDay()}, Achiever!</p>
-        <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-800 to-orange-700">
+        <h1 className={`text-4xl font-bold text-transparent bg-clip-text ${settings.darkMode ? 'bg-gradient-to-r from-purple-200 to-orange-300': 'bg-gradient-to-r from-purple-800 to-orange-700'}`}>
           Your Journey Continues
         </h1>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
         <DashboardCard
           title="Completion Rate"
           value={`${Math.round(completionRate)}%`}
@@ -252,7 +252,7 @@ export const Dashboard: React.FC = () => {
         />
         <DashboardCard
           title="Current Streak"
-          value={AnalyticsService.getCombinedStreak(goals, todoLists)}
+          value={AnalyticsService.getTodoStreak(todoLists)}
           icon={<TrendingUp className="w-6 h-6 text-green-500" />}
           description="Days of consistent progress"
           isDarkMode={settings.darkMode}
@@ -267,9 +267,9 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        <section className={`p-6 rounded-xl ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+        <section className={`p-6 rounded-xl ${settings.darkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-800'}`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center">
+            <h2 className={`text-xl font-semibold flex items-center ${settings.darkMode ? 'text-purple-200' : 'text-gray-800'}`}>
               <AlertCircle className="w-5 h-5 mr-2 text-orange-500" />
               Pending Tasks
             </h2>
@@ -293,9 +293,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        <section className={`p-6 rounded-xl ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+        <section className={`p-6 rounded-xl ${settings.darkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-800'}`}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold flex items-center">
+            <h2 className={`text-xl font-semibold flex items-center ${settings.darkMode ? 'text-purple-200' : 'text-gray-800'}`}>
               <Calendar className="w-5 h-5 mr-2 text-purple-500" />
               Upcoming Events
             </h2>
@@ -321,14 +321,14 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Category Progress</h2>
+        <h2 className={`text-2xl font-semibold ${settings.darkMode ? 'text-purple-200':'text-purple-800'} mb-6`}>Category Progress</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {categories.map(category => {
             const IconComponent = iconMap[category.icon as keyof typeof iconMap];
             const progress = AnalyticsService.calculateCategoryProgress(goals, category.name);
 
             return (
-              <div key={category.id} className={`rounded-xl shadow-md p-6 ${settings.darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
+              <div key={category.id} className={`rounded-xl shadow-md p-6 ${settings.darkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-800'}`}>
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: category.color + '20' }}>
                     {IconComponent && (

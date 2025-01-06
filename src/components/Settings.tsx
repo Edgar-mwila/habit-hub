@@ -1,16 +1,19 @@
 import React from 'react';
 import {
   Moon, Bell, Database, HelpCircle, RefreshCw,
-  MessageCircle, Award, User
+  MessageCircle, Award, User,
+  Trash2
 } from 'react-feather';
 import { useSettings } from '../context/settings';
 import { AnalogTimePicker } from './AnalogTimeSelector';
 import { AlarmClock } from 'lucide-react';
+import { LocalStorageManager } from '../services/LocalStorageManager';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsSection: React.FC<{ title: string; children: React.ReactNode, isDarkMode: boolean }> = ({ title, children, isDarkMode }) => (
   <div className="mb-8">
     <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-purple-300' : 'text-purple-800'} mb-4`}>{title}</h2>
-    <div className={`rounded-lg shadow-md p-6 space-y-6 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`rounded-lg shadow-md p-6 space-y-6 ${isDarkMode ? 'bg-gray-800' : 'bg-purple-200'}`}>
       {children}
     </div>
   </div>
@@ -19,9 +22,16 @@ const SettingsSection: React.FC<{ title: string; children: React.ReactNode, isDa
 export const Settings: React.FC = () => {
   const { settings, updateSetting } = useSettings();
 
-  const gradientButton = "bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600 text-white font-semibold py-2 px-4 rounded transition-all duration-200";
+  const gradientButton = "bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600 text-purple-200 font-semibold py-2 px-4 rounded transition-all duration-200";
   const toggleClass = "relative inline-flex items-center h-6 rounded-full w-11 transition-colors";
-  const toggleHandle = `inline-block h-4 w-4 transform rounded-full ${settings.darkMode ? 'bg-gray-800' : 'bg-white'} transition-transform`;
+  const toggleHandle = `inline-block h-4 w-4 transform rounded-full ${settings.darkMode ? 'bg-gray-800' : 'bg-purple-200'} transition-transform`;
+
+  const handleResetData = () => {
+    if (window.confirm("Are you sure you want to delete all data and progress? This action cannot be undone.")) {
+      LocalStorageManager.clearAll();
+    }
+    window.alert('Your Data as been successfully reset');
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
@@ -178,6 +188,24 @@ export const Settings: React.FC = () => {
             className={`${toggleClass} ${settings.motivationalQuotes ? 'bg-purple-600' : 'bg-gray-200'}`}
           >
             <span className={`${toggleHandle} ${settings.motivationalQuotes ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title="Data Management" isDarkMode={settings.darkMode}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Trash2 className={`mr-4 ${settings.darkMode ? 'text-purple-300' : 'text-purple-600'}`} />
+            <div>
+              <h3 className={`font-semibold ${settings.darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Delete All Data</h3>
+              <p className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Permanently delete all data and progress</p>
+            </div>
+          </div>
+          <button
+            onClick={handleResetData}
+            className={`${gradientButton} bg-red-600 hover:bg-red-700`}
+          >
+            Delete Data
           </button>
         </div>
       </SettingsSection>

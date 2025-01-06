@@ -38,7 +38,7 @@ export const TodoListView: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { settings } = useSettings();
   const bgColor = settings.darkMode ? 'bg-gray-900' : 'bg-gray-50';
-  const textColor = settings.darkMode ? 'text-white' : 'text-gray-900';
+  const textColor = settings.darkMode ? 'text-purple-200' : 'text-gray-900';
 
   useEffect(() => {
     loadTodos();
@@ -156,7 +156,7 @@ export const TodoListView: React.FC = () => {
             className={`w-full p-4 rounded-xl border ${
               settings.darkMode
                 ? 'bg-gray-800 border-gray-700'
-                : 'bg-white border-gray-200'
+                : 'bg-purple-200 border-gray-200'
             } focus:ring-2 focus:ring-purple-500`}
             value={newTodo.title}
             onChange={e => setNewTodo({ ...newTodo, title: e.target.value })}
@@ -168,7 +168,7 @@ export const TodoListView: React.FC = () => {
             className={`w-full p-4 rounded-xl border ${
               settings.darkMode
                 ? 'bg-gray-800 border-gray-700'
-                : 'bg-white border-gray-200'
+                : 'bg-purple-200 border-gray-200'
             } focus:ring-2 focus:ring-purple-500`}
             value={newTodo.description || ''}
             onChange={e => setNewTodo({ ...newTodo, description: e.target.value })}
@@ -181,7 +181,7 @@ export const TodoListView: React.FC = () => {
               className={`flex-1 p-4 rounded-xl border ${
                 settings.darkMode
                   ? 'bg-gray-800 border-gray-700'
-                  : 'bg-white border-gray-200'
+                  : 'bg-purple-200 border-gray-200'
               } focus:ring-2 focus:ring-purple-500`}
               value={newTodo.dueTime || ''}
               onChange={e => setNewTodo({ ...newTodo, dueTime: e.target.value })}
@@ -192,7 +192,7 @@ export const TodoListView: React.FC = () => {
               className={`flex-1 p-4 rounded-xl border ${
                 settings.darkMode
                   ? 'bg-gray-800 border-gray-700'
-                  : 'bg-white border-gray-200'
+                  : 'bg-purple-200 border-gray-200'
               } focus:ring-2 focus:ring-purple-500`}
               value={newTodo.reminderTime || ''}
               onChange={e => setNewTodo({ ...newTodo, reminderTime: e.target.value })}
@@ -216,7 +216,7 @@ export const TodoListView: React.FC = () => {
               className={`w-full p-4 rounded-xl border ${
                 settings.darkMode
                   ? 'bg-gray-800 border-gray-700'
-                  : 'bg-white border-gray-200'
+                  : 'bg-purple-200 border-gray-200'
               } focus:ring-2 focus:ring-purple-500`}
               value={newTodo.recurrencePattern?.frequency || 'daily'}
               onChange={e =>
@@ -237,7 +237,7 @@ export const TodoListView: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full bg-purple-500 text-white p-4 rounded-xl font-semibold hover:bg-purple-600 transition-colors"
+            className="w-full bg-purple-500 text-purple-200 p-4 rounded-xl font-semibold hover:bg-purple-600 transition-colors"
           >
             Add Todo
           </button>
@@ -257,7 +257,7 @@ export const TodoListView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         className={`p-4 rounded-xl border ${
-          settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-purple-200 border-gray-200'
         } shadow-sm`}
       >
         <div className="flex items-start justify-between">
@@ -346,7 +346,7 @@ export const TodoListView: React.FC = () => {
           </h1>
           <button
             onClick={() => setIsDrawerOpen(true)}
-            className="bg-purple-500 text-white p-3 rounded-full shadow-lg hover:bg-purple-600 transition-colors"
+            className="bg-purple-500 text-purple-200 p-3 rounded-full shadow-lg hover:bg-purple-600 transition-colors"
           >
             <Plus size={24} />
           </button>

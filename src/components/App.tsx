@@ -37,12 +37,12 @@ export const App: React.FC = () => {
         <header className={`fixed top-0 left-0 right-0 ${
           settings.darkMode 
             ? 'bg-gray-800 shadow-gray-900/50'
-            : 'bg-white'
+            : 'bg-purple-200'
           } shadow-lg z-10 flex justify-between items-center px-4 h-16 transition-colors duration-300`}>
           <div className="flex items-center">
             <img src="/logo.png" alt="HabbitHub Logo" className="h-8" />
             <span className={`ml-3 text-lg font-semibold ${
-              settings.darkMode ? 'text-white' : 'text-gray-700'
+              settings.darkMode ? 'text-purple-200' : 'text-gray-700'
             }`}>
               HabbitHub
             </span>
@@ -62,7 +62,7 @@ export const App: React.FC = () => {
               <div className={`absolute right-0 mt-2 w-40 ${
                 settings.darkMode 
                   ? 'bg-gray-800 border-gray-700'
-                  : 'bg-white border-gray-200'
+                  : 'bg-purple-200 border-gray-200'
                 } shadow-lg border rounded-md`}>
                 <Link
                   to="/settings"
@@ -111,7 +111,7 @@ export const App: React.FC = () => {
         <nav className={`fixed bottom-0 w-full ${
           settings.darkMode 
             ? 'bg-gray-800 shadow-gray-900/50'
-            : 'bg-white'
+            : 'bg-purple-200'
           } shadow-lg transition-colors duration-300`}>
           <div className="flex justify-around items-center h-16 relative">
             {/* Dashboard Center Highlight */}

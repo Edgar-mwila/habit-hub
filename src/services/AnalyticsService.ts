@@ -5,7 +5,7 @@ export class AnalyticsService {
     const categoryGoals = goals.filter(goal => goal.category === category);
     if (!categoryGoals.length) return 0;
     const totalProgress = categoryGoals.reduce((sum, goal) => {
-      return sum + goal.currentProgress;
+      return sum + goal.currentProgress/100;
     }, 0);
     const progress = (totalProgress / categoryGoals.length) * 100;
     return isNaN(progress) ? 0 : Math.round(progress);
@@ -69,39 +69,6 @@ export class AnalyticsService {
       );
       
       if (allGoalsUpdated) {
-        streak++;
-      } else {
-        break;
-      }
-    }
-    
-    return streak;
-  }
-
-  static getCombinedStreak(goals: Goal[], todoLists: TodoList[]): number {
-    const today = new Date();
-    let streak = 0;
-    const dailyGoals = goals.filter(goal => goal.reviewFrequency === 'daily');
-    
-    for (let i = 0; i < 30; i++) {
-      const checkDate = new Date(today);
-      checkDate.setDate(today.getDate() - i);
-      const dateStr = checkDate.toISOString().split('T')[0];
-      
-      // Check goals
-      const allGoalsUpdated = dailyGoals.every(goal =>
-        goal.reviewHistory.some(review =>
-          review.date.split('T')[0] === dateStr &&
-          review.value >= 0
-        )
-      );
-      
-      // Check todos
-      const list = todoLists.find(l => l.date.split('T')[0] === dateStr);
-      const allTodosCompleted = !list || list.items.length === 0 || 
-        list.items.every(item => item.status === 'completed' || item.status === 'failed');
-      
-      if (allGoalsUpdated && allTodosCompleted) {
         streak++;
       } else {
         break;
