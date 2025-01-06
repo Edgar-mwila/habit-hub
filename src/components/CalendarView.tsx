@@ -22,17 +22,11 @@ export const CalendarView = () => {
   }, []);
 
   const eventTypeStyles = {
-    goal: {
+    event: {
       dot: settings.darkMode ? 'bg-purple-400' : 'bg-purple-500',
       bg: settings.darkMode ? 'bg-purple-900/20' : 'bg-purple-50',
       text: settings.darkMode ? 'text-purple-300' : 'text-purple-800',
       border: settings.darkMode ? 'border-purple-700' : 'border-purple-200'
-    },
-    task: {
-      dot: settings.darkMode ? 'bg-orange-400' : 'bg-orange-500',
-      bg: settings.darkMode ? 'bg-orange-900/20' : 'bg-orange-50',
-      text: settings.darkMode ? 'text-orange-300' : 'text-orange-800',
-      border: settings.darkMode ? 'border-orange-700' : 'border-orange-200'
     },
     appointment: {
       dot: settings.darkMode ? 'bg-blue-400' : 'bg-blue-500',
@@ -43,8 +37,7 @@ export const CalendarView = () => {
   };
 
   const typeIcons = {
-    goal: <Target className="w-4 h-4" />,
-    task: <Clock className="w-4 h-4" />,
+    event: <Target className="w-4 h-4" />,
     appointment: <CalIcon className="w-4 h-4" />
   };
 
@@ -52,7 +45,7 @@ export const CalendarView = () => {
     const [newEvent, setNewEvent] = useState<Omit<Event, 'id'>>({
       title: '',
       date: selectedDate || new Date().toISOString().split('T')[0],
-      type: 'task',
+      type: 'event',
       time: '',
       description: ''
     });
@@ -197,8 +190,7 @@ export const CalendarView = () => {
                     setNewEvent({ ...newEvent, type: e.target.value as Event['type'] })
                   }
                 >
-                  <option value="task">Task</option>
-                  <option value="goal">Goal</option>
+                  <option value="event">Event</option>
                   <option value="appointment">Appointment</option>
                 </select>
                 <input
@@ -256,7 +248,7 @@ export const CalendarView = () => {
       days.push(
         <div
           key={`empty-${i}`}
-          className={`h-24 ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}
+          className={`h-16 ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-md`}
         />
       );
     }
@@ -272,7 +264,7 @@ export const CalendarView = () => {
       days.push(
         <div
           key={day}
-          className={`h-24 ${
+          className={`h-16 ${
             settings.darkMode ? 'bg-gray-700' : 'bg-white'
           } rounded-lg border ${
             settings.darkMode ? 'border-gray-600' : 'border-gray-200'
@@ -328,7 +320,7 @@ export const CalendarView = () => {
             Calendar
           </h1>
           <p className={`text-base ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Plan and track your goals and events
+            Plan and track your appointments and events
           </p>
         </div>
         <div className="flex items-center space-x-4">
@@ -408,8 +400,7 @@ export const CalendarView = () => {
             </div>
           ))}
         </div>
-
-        <div className="grid grid-cols-7 gap-4">{renderCalendar()}</div>
+        <div className="grid grid-cols-7">{renderCalendar()}</div>
       </div>
 
       {/* Event List Section */}

@@ -1,40 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { LocalStorageManager } from '../services/LocalStorageManager';
-import { PlusCircle, ChevronDown, ChevronUp, Edit2, Trash2, Calendar, Target, AlertTriangle, CheckCircle } from 'lucide-react';
-import { MetricSelector } from './MetricSelector';
-import { GoalProgress } from './GoalProgress';
-import type { Goal, Metric, Category } from '../types';
+import { PlusCircle, ChevronDown, ChevronUp, Edit2, Trash2, AlertTriangle } from 'lucide-react';
 import { useSettings } from '../context/settings';
+import { Goal, DEFAULT_CATEGORIES, Review } from '../types';
+
+const REVIEW_TIME = '20:00';
 
 const GoalForm: React.FC<{
   onSubmit: (data: Partial<Goal>) => void;
   onCancel: () => void;
   initialData?: Partial<Goal>;
-  categories: Category[];
-  metrics: Metric[];
   isDarkMode: boolean;
-}> = ({ onSubmit, onCancel, initialData, categories, metrics, isDarkMode }) => {
-  
+}> = ({ onSubmit, onCancel, initialData, isDarkMode }) => {
   const [formData, setFormData] = useState<Partial<Goal>>({
     title: initialData?.title || '',
     description: initialData?.description || '',
-    category: initialData?.category || categories[0].name,
-    timeframe: initialData?.timeframe || 'daily',
-    startDate: initialData?.startDate || new Date().toISOString().split('T')[0],
-    endDate: initialData?.endDate || '',
-    target: initialData?.target || 0,
-    metric: initialData?.metric || metrics[0],
-    type: 'yearly',
+    category: initialData?.category || 'Career',
+    status: 'not-started',
+    currentProgress: 0,
     dueDate: initialData?.dueDate || new Date().toISOString().split('T')[0],
+    reviewFrequency: initialData?.reviewFrequency || 'weekly',
+    reviewHistory: [],
   });
 
   const containerClasses = isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black';
-  const inputClasses = isDarkMode ? 'bg-gray-700 text-white border-gray-600 focus:ring-2 focus:ring-purple-500' : 'bg-white text-black border-gray-300 focus:ring-2 focus:ring-purple-500';
-  const buttonClasses = isDarkMode ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-gradient-to-r from-purple-600 to-orange-500 text-white hover:from-purple-700 hover:to-orange-600';
+  const inputClasses = isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300';
 
   return (
-    <div className={`p-6 rounded-lg shadow-lg ${containerClasses} h-[70vh] overflow-y-auto`}>
-      <h3 className="text-xl font-semibold mb-4 text-purple-800">
+    <div className={`p-6 rounded-lg shadow-lg ${containerClasses}`}>
+      <h3 className="text-xl font-semibold mb-4">
         {initialData ? 'Edit Goal' : 'Create New Goal'}
       </h3>
       <form onSubmit={(e) => {
@@ -60,9 +54,9 @@ const GoalForm: React.FC<{
         <select
           className={`w-full p-2 border rounded-md ${inputClasses}`}
           value={formData.category}
-          onChange={e => setFormData({...formData, category: e.target.value})}
+          onChange={e => setFormData({...formData, category: e.target.value as Goal['category']})}
         >
-          {categories.map(category => (
+          {DEFAULT_CATEGORIES.map(category => (
             <option key={category.id} value={category.name}>
               {category.name}
             </option>
@@ -71,61 +65,21 @@ const GoalForm: React.FC<{
 
         <select
           className={`w-full p-2 border rounded-md ${inputClasses}`}
-          value={formData.timeframe}
-          onChange={e => setFormData({...formData, timeframe: e.target.value as Goal['timeframe']})}
+          value={formData.reviewFrequency}
+          onChange={e => setFormData({...formData, reviewFrequency: e.target.value as Goal['reviewFrequency']})}
         >
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-          <option value="yearly">Yearly</option>
+          <option value="daily">Daily Review</option>
+          <option value="weekly">Weekly Review</option>
+          <option value="never">Manual Review Only</option>
         </select>
 
-        <MetricSelector
-          metrics={metrics}
-          selectedMetric={formData.metric!}
-          onMetricChange={metric => setFormData({...formData, metric})}
+        <input
+          type="date"
+          className={`w-full p-2 border rounded-md ${inputClasses}`}
+          value={formData.dueDate}
+          onChange={e => setFormData({...formData, dueDate: e.target.value})}
+          required
         />
-
-        <div className="flex space-x-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start Date
-            </label>
-            <input
-              type="date"
-              className={`w-full p-2 border rounded-md ${inputClasses}`}
-              value={formData.startDate}
-              onChange={e => setFormData({...formData, startDate: e.target.value})}
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              End Date
-            </label>
-            <input
-              type="date"
-              className={`w-full p-2 border rounded-md ${inputClasses}`}
-              value={formData.endDate}
-              onChange={e => setFormData({...formData, endDate: e.target.value})}
-              required
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Target ({formData.metric!.unit || 'units'})
-          </label>
-          <input
-            type="number"
-            className={`w-full p-2 border rounded-md ${inputClasses}`}
-            value={formData.target}
-            onChange={e => setFormData({...formData, target: Number(e.target.value)})}
-            required
-            min="0"
-          />
-        </div>
 
         <div className="flex justify-end space-x-4">
           <button
@@ -137,7 +91,7 @@ const GoalForm: React.FC<{
           </button>
           <button
             type="submit"
-            className={`px-4 py-2 rounded-md ${buttonClasses}`}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
           >
             {initialData ? 'Update Goal' : 'Create Goal'}
           </button>
@@ -147,30 +101,126 @@ const GoalForm: React.FC<{
   );
 };
 
+const ReviewForm: React.FC<{
+  onSubmit: (review: Partial<Review>) => void;
+  onCancel: () => void;
+  goalId: string;
+  isDarkMode: boolean;
+}> = ({ onSubmit, onCancel, goalId, isDarkMode }) => {
+  const [formData, setFormData] = useState<Partial<Review>>({
+    goalId,
+    date: new Date().toISOString(),
+    value: 0,
+    notes: ''
+  });
+
+  const inputClasses = isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300';
+
+  return (
+    <div className="p-4 border rounded-lg shadow-sm space-y-4">
+      <input
+        type="number"
+        min="0"
+        max="100"
+        placeholder="Progress (%)"
+        className={`w-full p-2 border rounded-md ${inputClasses}`}
+        value={formData.value}
+        onChange={e => setFormData({...formData, value: Number(e.target.value)})}
+        required
+      />
+      
+      <textarea
+        placeholder="Review notes..."
+        className={`w-full p-2 border rounded-md ${inputClasses}`}
+        value={formData.notes}
+        onChange={e => setFormData({...formData, notes: e.target.value})}
+      />
+
+      <div className="flex justify-end space-x-2">
+        <button
+          onClick={onCancel}
+          className="px-3 py-1 text-gray-600 hover:text-gray-800"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => onSubmit(formData)}
+          className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+        >
+          Submit Review
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const GoalManagement: React.FC = () => {
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [metrics, setMetrics] = useState<Metric[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
-  const [showNoteInput, setShowNoteInput] = useState<string | null>(null);
-  const [progressNote, setProgressNote] = useState('');
+  const [reviewingGoal, setReviewingGoal] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<string[]>([]);
   const { settings } = useSettings();
 
   useEffect(() => {
-    setGoals(LocalStorageManager.getGoals());
-    setCategories(LocalStorageManager.getCategories());
-    setMetrics(LocalStorageManager.getMetrics());
+    loadGoals();
+    const interval = setInterval(checkReviewSchedule, 60000); // Check every minute
+    return () => clearInterval(interval);
   }, []);
+
+  const loadGoals = () => {
+    const savedGoals = LocalStorageManager.getGoals();
+    setGoals(savedGoals);
+  };
+
+  const checkReviewSchedule = () => {
+    const now = new Date();
+    const currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                       now.getMinutes().toString().padStart(2, '0');
+    
+    if (currentTime === REVIEW_TIME) {
+      goals.forEach(goal => {
+        if (!shouldShowReviewNotification(goal)) return;
+        
+        const notification = `Time to review your goal: ${goal.title}`;
+        if (!notifications.includes(notification)) {
+          setNotifications(prev => [...prev, notification]);
+        }
+      });
+    }
+  };
+
+  const shouldShowReviewNotification = (goal: Goal) => {
+    if (goal.status === 'completed') return false;
+    if (goal.reviewFrequency === 'never') return false;
+    
+    const lastReview = goal.reviewHistory[goal.reviewHistory.length - 1];
+    if (!lastReview) return true;
+    
+    const lastReviewDate = new Date(lastReview.date);
+    const today = new Date();
+    
+    if (goal.reviewFrequency === 'daily') {
+      return lastReviewDate.getDate() !== today.getDate();
+    }
+    
+    if (goal.reviewFrequency === 'weekly') {
+      const diffTime = Math.abs(today.getTime() - lastReviewDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 7;
+    }
+    
+    return false;
+  };
 
   const handleSubmit = (data: Partial<Goal>) => {
     const newGoal: Goal = {
       ...data,
       id: editingGoal?.id || Math.random().toString(36).substring(7),
+      status: 'in-progress',
       currentProgress: editingGoal?.currentProgress || 0,
-      status: 'not-started',
-      progressHistory: editingGoal?.progressHistory || [],
+      reviewHistory: editingGoal?.reviewHistory || [],
     } as Goal;
 
     const updatedGoals = editingGoal 
@@ -183,26 +233,24 @@ export const GoalManagement: React.FC = () => {
     setEditingGoal(null);
   };
 
-  const handleProgressUpdate = (goalId: string, newProgress: number) => {
-    setShowNoteInput(goalId);
-  };
+  const handleReviewSubmit = (review: Partial<Review>) => {
+    if (!reviewingGoal) return;
 
-  const saveProgressWithNote = (goalId: string, progress: number) => {
-    const now = new Date().toISOString();
+    const reviewObj: Review = {
+      ...review,
+      id: Math.random().toString(36).substring(7),
+      goalId: reviewingGoal,
+      date: new Date().toISOString(),
+    } as Review;
+
     const updatedGoals = goals.map(goal => {
-      if (goal.id === goalId) {
-        const newProgress = {
-          id: Math.random().toString(36).substring(7),
-          goalId,
-          date: now,
-          value: progress,
-          notes: progressNote || undefined
-        };
+      if (goal.id === reviewingGoal) {
+        const newProgress = review.value || 0;
         return {
           ...goal,
-          currentProgress: progress,
-          progressHistory: [...goal.progressHistory, newProgress],
-          status: progress >= goal.target ? 'completed' : 'in-progress'
+          currentProgress: newProgress,
+          status: newProgress >= 100 ? 'completed' : 'in-progress',
+          reviewHistory: [...goal.reviewHistory, reviewObj],
         };
       }
       return goal;
@@ -210,8 +258,7 @@ export const GoalManagement: React.FC = () => {
 
     setGoals(updatedGoals);
     LocalStorageManager.saveGoals(updatedGoals);
-    setShowNoteInput(null);
-    setProgressNote('');
+    setReviewingGoal(null);
   };
 
   const deleteGoal = (goalId: string) => {
@@ -228,73 +275,55 @@ export const GoalManagement: React.FC = () => {
     );
   };
 
-  const getDaysUntilDue = (dueDate: string | number | Date) => {
-    const due = new Date(dueDate);
-    const today = new Date();
-    const diffTime = due.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
-  const getUpcomingGoals = () => {
-    return goals.filter(goal => {
-      const daysUntilDue = getDaysUntilDue(goal.dueDate);
-      return daysUntilDue <= 7 && daysUntilDue > 0 && goal.status !== 'completed';
-    });
-  };
-
-  const categorizedGoals = categories.map(category => ({
-    category,
-    goals: goals.filter(goal => goal.category === category.name)
-  }));
-
   return (
-    <div
-      className={`max-w-6xl mx-auto p-6 space-y-8 ${settings.darkMode ? 'bg-gradient-to-br from-gray-900 to-purple-900' : 'bg-white'}`}
-    >
-      {/* Upcoming Deadlines Section */}
-      {getUpcomingGoals().length > 0 && (
-        <div
-          className={`p-4 rounded-lg border ${settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-orange-50 border-orange-200'}`}
-        >
-          <h2 className={`text-lg font-semibold ${settings.darkMode ? 'text-orange-200' : 'text-orange-800'} mb-4 flex items-center`}>
-            <AlertTriangle className="mr-2" />
-            Upcoming Deadlines
-          </h2>
-          <div className="space-y-3">
-            {getUpcomingGoals().map(goal => (
-              <div
-                key={goal.id}
-                className={`flex items-center justify-between p-3 rounded-md shadow-sm ${settings.darkMode ? 'bg-gray-700' : 'bg-white'}`}
-              >
-                <div>
-                  <h3 className={`font-medium ${settings.darkMode ? 'text-white' : ''}`}>{goal.title}</h3>
-                  <p className={`text-sm ${settings.darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
-                    Due in {getDaysUntilDue(goal.dueDate)} days
-                  </p>
-                </div>
-                <GoalProgress
-                  goal={goal}
-                  onProgressUpdate={(progress) => handleProgressUpdate(goal.id, progress)}
-                />
+    <div className={`max-w-6xl mx-auto p-6 space-y-8 ${settings.darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+      {notifications.length > 0 && (
+        <div className="space-y-2">
+          {notifications.map((notification, index) => (
+            <div
+              key={index}
+              className={`flex items-start p-4 mb-4 rounded-lg border ${
+                settings.darkMode
+                  ? 'bg-gray-800 border-purple-500 text-white'
+                  : 'bg-purple-50 border-purple-200 text-gray-800'
+              }`}
+            >
+              <div className="flex-shrink-0">
+                {/* Replace this with an SVG or icon for AlertTriangle */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-purple-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4m0 4h.01"
+                  />
+                </svg>
               </div>
-            ))}
-          </div>
+              <div className="ml-3">
+                <p className="text-sm">{notification}</p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
-  
-      {/* Add Goal Button */}
+
       <div className="flex justify-between items-center">
         <h1 className={`text-2xl font-bold ${settings.darkMode ? 'text-white' : 'text-gray-800'}`}>Your Goals</h1>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
         >
           <PlusCircle className="mr-2" size={20} />
           Add Goal
         </button>
       </div>
-  
-      {/* Goal Form Modal */}
+
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="max-w-2xl w-full mx-4">
@@ -305,122 +334,187 @@ export const GoalManagement: React.FC = () => {
                 setEditingGoal(null);
               }}
               initialData={editingGoal || undefined}
-              categories={categories}
-              metrics={metrics}
               isDarkMode={settings.darkMode}
             />
           </div>
         </div>
       )}
-  
-      {/* Categorized Goals */}
+
       <div className="space-y-6">
-        {categorizedGoals.map(({ category, goals: categoryGoals }) => (
-          <div key={category.id} className={`border rounded-lg overflow-hidden ${settings.darkMode ? 'bg-gray-800' : ''}`}>
-            <button
-              onClick={() => toggleCategory(category.name)}
-              className={`w-full flex items-center justify-between p-4 ${settings.darkMode ? 'bg-gray-700' : 'bg-white'} hover:bg-gray-50`}
-              style={{ borderLeft: `4px solid ${category.color}` }}
+        {DEFAULT_CATEGORIES.map(category => {
+          const categoryGoals = goals.filter(goal => goal.category === category.name);
+          
+          return (
+            <div
+              key={category.id}
+              className={`p-4 rounded-lg shadow-sm border ${
+                settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'
+              }`}
             >
-              <div className="flex items-center">
-                <span className={`font-semibold text-lg ${settings.darkMode ? 'text-white' : ''}`}>{category.name}</span>
-                <span className="ml-3 text-sm text-gray-500">
-                  {categoryGoals.length} goals
-                </span>
+              <div
+                className="cursor-pointer p-2 rounded-lg"
+                onClick={() => toggleCategory(category.name)}
+                style={{ borderLeft: `4px solid ${category.color}` }}
+              >
+                <div className="flex items-center justify-between">
+                  <h3
+                    className={`text-lg font-semibold flex items-center ${
+                      settings.darkMode ? 'text-white' : 'text-gray-900'
+                    }`}
+                  >
+                    {category.name}
+                    <span className="ml-3 text-sm text-gray-500">
+                      {categoryGoals.length} goals
+                    </span>
+                  </h3>
+                  {expandedCategories.includes(category.name) ? (
+                    <ChevronUp size={20} />
+                  ) : (
+                    <ChevronDown size={20} />
+                  )}
+                </div>
               </div>
-              {expandedCategories.includes(category.name) ? (
-                <ChevronUp size={20} />
-              ) : (
-                <ChevronDown size={20} />
-              )}
-            </button>
-  
-            {expandedCategories.includes(category.name) && (
-              <div className="divide-y">
-                {categoryGoals.map(goal => (
-                  <div key={goal.id} className={`p-4 ${settings.darkMode ? 'bg-gray-700' : 'bg-white'}`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className={`font-medium text-lg ${settings.darkMode ? 'text-white' : ''}`}>{goal.title}</h3>
-                        <p className={`text-gray-600 text-sm ${settings.darkMode ? 'text-gray-300' : ''}`}>{goal.description}</p>
+
+              {expandedCategories.includes(category.name) && (
+                <div className="mt-4 space-y-4">
+                  {categoryGoals.map(goal => (
+                    <div key={goal.id} className={`p-4 border rounded-lg ${settings.darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}`}>
+                      {/* Continuing from the previous goal mapping section */}
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className={`font-medium text-lg ${settings.darkMode ? 'text-white' : ''}`}>
+                            {goal.title}
+                          </h3>
+                          <p className={`text-sm ${settings.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {goal.description}
+                          </p>
+                          <div className={`text-sm mt-2 ${settings.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Review Frequency: {goal.reviewFrequency || 'weekly'}
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditingGoal(goal);
+                              setShowForm(true);
+                            }}
+                            className={`p-2 ${settings.darkMode ? 'text-gray-300 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => deleteGoal(goal.id)}
+                            className={`p-2 ${settings.darkMode ? 'text-gray-300 hover:text-red-400' : 'text-gray-600 hover:text-red-600'}`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => {
-                            setEditingGoal(goal);
-                            setShowForm(true);
-                          }}
-                          className={`p-2 ${settings.darkMode ? 'text-gray-200 hover:text-purple-600' : 'text-gray-600 hover:text-purple-600'}`}
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => deleteGoal(goal.id)}
-                          className={`p-2 ${settings.darkMode ? 'text-gray-200 hover:text-red-600' : 'text-gray-600 hover:text-red-600'}`}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-  
-                    <div className="space-y-4">
-                      <GoalProgress
-                        goal={goal}
-                        onProgressUpdate={(progress) => handleProgressUpdate(goal.id, progress)}
-                      />
-  
-                      {showNoteInput === goal.id && (
-                        <div className="space-y-2">
-                          <textarea
-                            placeholder="Add a note about this progress update..."
-                            value={progressNote}
-                            onChange={(e) => setProgressNote(e.target.value)}
-                            className={`w-full p-2 border rounded-md ${settings.darkMode ? 'bg-gray-600 text-white' : ''}`}
+
+                      <div className="space-y-4">
+                        {/* Progress Bar */}
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                          <div
+                            className="bg-purple-600 h-2.5 rounded-full transition-all duration-500"
+                            style={{ width: `${goal.currentProgress}%` }}
                           />
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={() => setShowNoteInput(null)}
-                              className={`px-3 py-1 ${settings.darkMode ? 'text-gray-200 hover:text-gray-100' : 'text-gray-600 hover:text-gray-800'}`}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() => saveProgressWithNote(goal.id, goal.currentProgress)}
-                              className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-                            >
-                              Save Progress
-                            </button>
-                          </div>
                         </div>
-                      )}
-  
-                      {/* Progress History */}
-                      {goal.progressHistory.length > 0 && (
-                        <div className="mt-4">
-                          <h4 className={`text-sm font-medium ${settings.darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                            Progress History
-                          </h4>
-                          <div className="space-y-2">
-                            {goal.progressHistory.slice(-3).reverse().map(progress => (
-                              <div key={progress.id} className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'} flex justify-between items-center`}>
-                                <span>{new Date(progress.date).toLocaleDateString()}</span>
-                                <span>{progress.value} {goal.metric.unit}</span>
-                                {progress.notes && (
-                                  <span className="text-gray-500 italic">"{progress.notes}"</span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className={`text-sm ${settings.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                            Progress: {goal.currentProgress}%
+                          </span>
+                          <button
+                            onClick={() => setReviewingGoal(goal.id)}
+                            className="px-3 py-1 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                          >
+                            Add Review
+                          </button>
                         </div>
-                      )}
+
+                        {/* Review Form */}
+                        {reviewingGoal === goal.id && (
+                          <ReviewForm
+                            onSubmit={handleReviewSubmit}
+                            onCancel={() => setReviewingGoal(null)}
+                            goalId={goal.id}
+                            isDarkMode={settings.darkMode}
+                          />
+                        )}
+
+                        {/* Review History */}
+                        {goal.reviewHistory.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className={`text-sm font-medium mb-2 ${settings.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Review History
+                            </h4>
+                            <div className="space-y-2">
+                              {goal.reviewHistory.slice(-3).reverse().map(review => (
+                                <div
+                                  key={review.id}
+                                  className={`p-3 rounded-md ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className={`text-sm ${settings.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                      {new Date(review.date).toLocaleDateString()}
+                                    </span>
+                                    <span className={`text-sm font-medium ${settings.darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                                      {review.value}%
+                                    </span>
+                                  </div>
+                                  {review.notes && (
+                                    <p className={`text-sm mt-1 ${settings.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                      "{review.notes}"
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Subgoals Section */}
+                        {goal.subGoals && goal.subGoals.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className={`text-sm font-medium mb-2 ${settings.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              Subgoals
+                            </h4>
+                            <div className="space-y-2 pl-4">
+                              {goal.subGoals.map(subgoal => (
+                                <div
+                                  key={subgoal.id}
+                                  className={`p-3 rounded-md border ${settings.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className={settings.darkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                      {subgoal.title}
+                                    </span>
+                                    <span className={`text-sm ${settings.darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                      {subgoal.currentProgress}%
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-2">
+                                    <div
+                                      className="bg-purple-600 h-1.5 rounded-full"
+                                      style={{ width: `${subgoal.currentProgress}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
-  );  
+  );
 };
+
+export default GoalManagement;

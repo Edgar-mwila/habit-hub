@@ -10,8 +10,8 @@ export interface Settings {
   language: string;
   dataBackup: boolean;
   motivationalQuotes: boolean;
-  todoListMorningNotificationTime: string, 
-  todoListEveningNotificationTime: string, 
+  todoListMorningNotificationTime: string;
+  todoListEveningNotificationTime: string;
 }
 
 interface SettingsContextType {
@@ -28,8 +28,8 @@ export const defaultSettings: Settings = {
   language: 'English',
   dataBackup: true,
   motivationalQuotes: true,
-  todoListMorningNotificationTime: '07:00', 
-  todoListEveningNotificationTime: '07:00', 
+  todoListMorningNotificationTime: '07:00',
+  todoListEveningNotificationTime: '07:00',
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -38,13 +38,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
   useEffect(() => {
-    const settings = LocalStorageManager.getSettings();
-    setSettings(settings);
-  }, [])
+    const storedSettings = LocalStorageManager.getSettings();
+    setSettings(storedSettings);
+  }, []);
+
+  useEffect(() => {
+    LocalStorageManager.saveSettings(settings);
+  }, [settings]);
 
   const updateSetting = (key: keyof Settings, value: boolean | string) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-    LocalStorageManager.saveSettings(settings);
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   return (

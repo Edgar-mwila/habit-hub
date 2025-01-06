@@ -10,7 +10,6 @@ import { About } from './About';
 import { Chat } from './Chat';
 import { useSettings } from '../context/settings';
 import { TodoListView } from './TodoListView';
-import { TodoAnalytics } from './TodoAnalytics';
 import { ListTodo } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -116,17 +115,7 @@ export const App: React.FC = () => {
           } shadow-lg transition-colors duration-300`}>
           <div className="flex justify-around items-center h-16 relative">
             {/* Dashboard Center Highlight */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-2 bg-purple-500 rounded-full shadow-lg p-4">
-              <NavItem
-                icon={<Home size={28} />}
-                to="/"
-                label="Dashboard"
-                isActive={activeTab === 'dashboard'}
-                onClick={() => setActiveTab('dashboard')}
-                isDarkMode={settings.darkMode}
-                isCenter
-              />
-            </div>
+            
 
             {/* Other Navigation Items */}
             <NavItem
@@ -145,6 +134,16 @@ export const App: React.FC = () => {
               onClick={() => setActiveTab('todo')}
               isDarkMode={settings.darkMode}
             />
+            <div className="bg-purple-300 rounded-lg shadow-lg p-2">
+              <NavItem
+                icon={<Home size={28} />}
+                to="/"
+                label="Dashboard"
+                isActive={activeTab === 'dashboard'}
+                onClick={() => setActiveTab('dashboard')}
+                isDarkMode={settings.darkMode}
+              />
+            </div>
             <NavItem
               icon={<Calendar size={24} />}
               to="/calendar"
@@ -184,14 +183,11 @@ const NavItem: React.FC<NavItemProps> = ({
   label, 
   isActive, 
   onClick, 
-  isDarkMode, 
-  isCenter 
+  isDarkMode,
 }) => (
   <Link
     to={to}
-    className={`flex flex-col items-center ${
-      isCenter ? 'text-white' : ''
-    } p-2 transition-colors duration-300 ${
+    className={`flex flex-col items-center p-2 transition-colors duration-300 ${
       isActive
         ? isDarkMode 
           ? 'text-purple-400'
@@ -203,7 +199,6 @@ const NavItem: React.FC<NavItemProps> = ({
     onClick={onClick}
   >
     {icon}
-    {!isCenter && <span className="text-xs mt-1">{label}</span>}
   </Link>
 );
 

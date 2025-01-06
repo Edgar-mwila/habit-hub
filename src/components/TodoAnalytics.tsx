@@ -2,17 +2,20 @@ import { useState, useEffect, useMemo } from "react";
 import { useSettings } from "../context/settings";
 import { LocalStorageManager } from "../services/LocalStorageManager";
 import { TodoList } from "../types";
+import { AnalyticsService } from "../services/AnalyticsService";
 
 export const TodoAnalytics: React.FC = () => {
     const [todoHistory, setTodoHistory] = useState<TodoList[]>([]);
+    const [streak, setStreak] = useState(0)
     const { settings } = useSettings();
-    
-    const bgColor = settings.darkMode ? 'bg-gray-900' : 'bg-gray-50';
+  
     const textColor = settings.darkMode ? 'text-white' : 'text-gray-900';
   
     useEffect(() => {
       const todos = LocalStorageManager.getTodoLists();
+      const streak = AnalyticsService.getTodoStreak(todos);
       setTodoHistory(todos);
+      setStreak(streak);
     }, []);
   
     const stats = useMemo(() => {
@@ -51,12 +54,21 @@ export const TodoAnalytics: React.FC = () => {
     }, [todoHistory]);
   
     return (
-      <div className={`min-h-screen ${bgColor} p-4`}>
+      <div className={`min-h-screen`}>
         <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text mb-6">
           Todo Analytics
         </h1>
   
         <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className={`col-span-2 p-4 rounded-xl ${
+            settings.darkMode ? 'bg-gray-800' : 'bg-white'
+          } shadow-sm`}>
+            <h3 className="text-sm text-gray-500 mb-1">Streak</h3>
+            <p className="text-2xl font-bold text-green-500">
+              {streak}%
+            </p>
+          </div>
+
           <div className={`p-4 rounded-xl ${
             settings.darkMode ? 'bg-gray-800' : 'bg-white'
           } shadow-sm`}>
@@ -84,11 +96,11 @@ export const TodoAnalytics: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Completed</span>
               <div className="flex items-center space-x-2">
-                <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500"
                     style={{
-                      width: `${stats.completionRate}%`
+                      width: `${stats.completionRate}%`,
                     }}
                   />
                 </div>
@@ -98,11 +110,11 @@ export const TodoAnalytics: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Failed</span>
               <div className="flex items-center space-x-2">
-                <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-red-500"
                     style={{
-                      width: `${stats.failureRate}%`
+                      width: `${stats.failureRate}%`,
                     }}
                   />
                 </div>
@@ -112,11 +124,11 @@ export const TodoAnalytics: React.FC = () => {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Pending</span>
               <div className="flex items-center space-x-2">
-                <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-yellow-500"
                     style={{
-                      width: `${(stats.pendingTasks / stats.totalTasks) * 100}%`
+                      width: `${(stats.pendingTasks / stats.totalTasks) * 100}%`,
                     }}
                   />
                 </div>
@@ -125,7 +137,7 @@ export const TodoAnalytics: React.FC = () => {
             </div>
           </div>
         </div>
-  
+
         <div className={`p-4 rounded-xl ${
           settings.darkMode ? 'bg-gray-800' : 'bg-white'
         } shadow-sm`}>
