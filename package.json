@@ -61,7 +61,8 @@
     "prebuild": "cordova prepare browser",
     "start": "bun run build && cordova run browser",
     "build": "webpack --mode production",
-    "watch": "webpack --watch --mode development"
+    "watch": "webpack --watch --mode development",
+    "android": "bun run build && cordova run android"
   },
   "dependencies": {
     "@nanostores/react": "ai/react",

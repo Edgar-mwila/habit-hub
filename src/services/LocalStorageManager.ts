@@ -1,5 +1,5 @@
 import { defaultSettings, Settings } from "../context/settings";
-import { Goal, Progress, User, Category, Event, DEFAULT_CATEGORIES, Metric, DEFAULT_METRICS, TodoList, TodoItem } from "../types";
+import { Goal,  Category, Event, DEFAULT_CATEGORIES, Metric, DEFAULT_METRICS, TodoList, TodoItem } from "../types";
 
 export class LocalStorageManager {
   private static readonly STORAGE_KEYS = {
@@ -20,28 +20,6 @@ export class LocalStorageManager {
   static getGoals(): Goal[] {
     const goals = localStorage.getItem(this.STORAGE_KEYS.GOALS);
     return goals ? JSON.parse(goals) : [];
-  }
-
-  static updateGoalProgress(goalId: string, progress: Progress): Goal[] {
-    const goals = this.getGoals();
-    const goalIndex = goals.findIndex(g => g.id === goalId);
-    
-    if (goalIndex !== -1) {
-      goals[goalIndex].progressHistory.push(progress);
-      goals[goalIndex].currentProgress = progress.value;
-      
-      // Update status based on progress
-      const progressPercentage = (progress.value / goals[goalIndex].target) * 100;
-      if (progressPercentage >= 100) {
-        goals[goalIndex].status = 'completed';
-      } else if (progressPercentage > 0) {
-        goals[goalIndex].status = 'in-progress';
-      }
-      
-      this.saveGoals(goals);
-    }
-    
-    return goals;
   }
 
   //Event management
@@ -100,15 +78,15 @@ export class LocalStorageManager {
     }
   }
 
-  // User Management
-  static saveUser(user: User): void {
-    localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
-  }
+  // // User Management
+  // static saveUser(user: User): void {
+  //   localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
+  // }
 
-  static getUser(): User | null {
-    const user = localStorage.getItem(this.STORAGE_KEYS.USER);
-    return user ? JSON.parse(user) : null;
-  }
+  // static getUser(): User | null {
+  //   const user = localStorage.getItem(this.STORAGE_KEYS.USER);
+  //   return user ? JSON.parse(user) : null;
+  // }
 
   // Category Management
   static saveCategories(categories: Category[]): void {
@@ -148,7 +126,7 @@ export class LocalStorageManager {
   static exportData(): string {
     const data = {
       goals: this.getGoals(),
-      user: this.getUser(),
+      // user: this.getUser(),
       categories: this.getCategories(),
       events: this.getEvents(),
       metrics: this.getMetrics(),
@@ -161,7 +139,7 @@ export class LocalStorageManager {
     try {
       const data = JSON.parse(jsonData);
       if (data.goals) this.saveGoals(data.goals);
-      if (data.user) this.saveUser(data.user);
+      // if (data.user) this.saveUser(data.user);
       if (data.categories) this.saveCategories(data.categories);
       if (data.metrics) this.saveMetrics(data.metrics);
       if (data.todos) this.saveTodoLists(data.todos);

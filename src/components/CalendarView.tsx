@@ -22,17 +22,11 @@ export const CalendarView = () => {
   }, []);
 
   const eventTypeStyles = {
-    goal: {
+    event: {
       dot: settings.darkMode ? 'bg-purple-400' : 'bg-purple-500',
       bg: settings.darkMode ? 'bg-purple-900/20' : 'bg-purple-50',
       text: settings.darkMode ? 'text-purple-300' : 'text-purple-800',
       border: settings.darkMode ? 'border-purple-700' : 'border-purple-200'
-    },
-    task: {
-      dot: settings.darkMode ? 'bg-orange-400' : 'bg-orange-500',
-      bg: settings.darkMode ? 'bg-orange-900/20' : 'bg-orange-50',
-      text: settings.darkMode ? 'text-orange-300' : 'text-orange-800',
-      border: settings.darkMode ? 'border-orange-700' : 'border-orange-200'
     },
     appointment: {
       dot: settings.darkMode ? 'bg-blue-400' : 'bg-blue-500',
@@ -43,8 +37,7 @@ export const CalendarView = () => {
   };
 
   const typeIcons = {
-    goal: <Target className="w-4 h-4" />,
-    task: <Clock className="w-4 h-4" />,
+    event: <Target className="w-4 h-4" />,
     appointment: <CalIcon className="w-4 h-4" />
   };
 
@@ -52,7 +45,7 @@ export const CalendarView = () => {
     const [newEvent, setNewEvent] = useState<Omit<Event, 'id'>>({
       title: '',
       date: selectedDate || new Date().toISOString().split('T')[0],
-      type: 'task',
+      type: 'event',
       time: '',
       description: ''
     });
@@ -82,7 +75,7 @@ export const CalendarView = () => {
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className={`fixed inset-y-0 right-0 w-full md:w-96 ${
-          settings.darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'
+          settings.darkMode ? 'bg-gray-800 text-purple-200' : 'bg-purple-200 text-gray-900'
         } shadow-xl z-50 overflow-hidden flex flex-col`}
       >
         <div className="p-4 border-b flex justify-between items-center">
@@ -99,7 +92,7 @@ export const CalendarView = () => {
                 onClick={() => setDrawerMode('view')}
                 className={`px-3 py-1 rounded-full text-sm ${
                   drawerMode === 'view'
-                    ? 'bg-purple-500 text-white'
+                    ? 'bg-purple-500 text-purple-200'
                     : settings.darkMode
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -111,7 +104,7 @@ export const CalendarView = () => {
                 onClick={() => setDrawerMode('add')}
                 className={`px-3 py-1 rounded-full text-sm ${
                   drawerMode === 'add'
-                    ? 'bg-purple-500 text-white'
+                    ? 'bg-purple-500 text-purple-200'
                     : settings.darkMode
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-600 hover:bg-gray-100'
@@ -180,7 +173,7 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.title}
                   onChange={e => setNewEvent({ ...newEvent, title: e.target.value })}
@@ -190,15 +183,14 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.type}
                   onChange={e =>
                     setNewEvent({ ...newEvent, type: e.target.value as Event['type'] })
                   }
                 >
-                  <option value="task">Task</option>
-                  <option value="goal">Goal</option>
+                  <option value="event">Event</option>
                   <option value="appointment">Appointment</option>
                 </select>
                 <input
@@ -206,7 +198,7 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.time}
                   onChange={e => setNewEvent({ ...newEvent, time: e.target.value })}
@@ -216,7 +208,7 @@ export const CalendarView = () => {
                   className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
                     settings.darkMode
                       ? 'bg-gray-700 border-gray-600'
-                      : 'bg-white border-gray-300'
+                      : 'bg-purple-200 border-gray-300'
                   }`}
                   value={newEvent.description}
                   onChange={e =>
@@ -226,7 +218,7 @@ export const CalendarView = () => {
                 />
                 <button
                   type="submit"
-                  className="w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition-colors"
+                  className="w-full bg-purple-500 text-purple-200 py-2 rounded-lg hover:bg-purple-600 transition-colors"
                 >
                   Add Event
                 </button>
@@ -256,7 +248,7 @@ export const CalendarView = () => {
       days.push(
         <div
           key={`empty-${i}`}
-          className={`h-24 ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}
+          className={`h-16 ${settings.darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-md`}
         />
       );
     }
@@ -272,9 +264,9 @@ export const CalendarView = () => {
       days.push(
         <div
           key={day}
-          className={`h-24 ${
-            settings.darkMode ? 'bg-gray-700' : 'bg-white'
-          } rounded-lg border ${
+          className={`h-16 ${
+            settings.darkMode ? 'bg-gray-700' : 'bg-purple-200'
+          } border ${
             settings.darkMode ? 'border-gray-600' : 'border-gray-200'
           } p-2 hover:shadow-md transition-all cursor-pointer ${
             isSelected
@@ -319,7 +311,7 @@ export const CalendarView = () => {
   return (
     <div
       className={`max-w-6xl mx-auto px-4 py-6 ${
-        settings.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'
+        settings.darkMode ? 'bg-gray-900 text-gray-100' : 'bg-purple-200 text-gray-900'
       }`}
     >
       <header className="mb-8 flex justify-between items-center">
@@ -328,7 +320,7 @@ export const CalendarView = () => {
             Calendar
           </h1>
           <p className={`text-base ${settings.darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Plan and track your goals and events
+            Plan and track your appointments and events
           </p>
         </div>
         <div className="flex items-center space-x-4">
@@ -346,7 +338,7 @@ export const CalendarView = () => {
               setDrawerMode('add');
               setIsDrawerOpen(true);
             }}
-            className="flex items-center bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
+            className="flex items-center bg-purple-500 text-purple-200 px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors"
           >
             <Plus size={20} className="mr-2" />
             Add Event
@@ -356,7 +348,7 @@ export const CalendarView = () => {
 
       <div
         className={`${
-          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+          settings.darkMode ? 'bg-gray-800' : 'bg-purple-200'
         } rounded-xl shadow-lg p-6`}
       >
         <div className="flex justify-between items-center mb-6">
@@ -408,14 +400,13 @@ export const CalendarView = () => {
             </div>
           ))}
         </div>
-
-        <div className="grid grid-cols-7 gap-4">{renderCalendar()}</div>
+        <div className="grid grid-cols-7">{renderCalendar()}</div>
       </div>
 
       {/* Event List Section */}
       <div
         className={`mt-8 ${
-          settings.darkMode ? 'bg-gray-800' : 'bg-white'
+          settings.darkMode ? 'bg-gray-800' : 'bg-purple-200'
         } rounded-xl shadow-lg p-6`}
       >
         <h3 className="text-xl font-semibold mb-4">Upcoming Events</h3>

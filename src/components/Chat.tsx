@@ -38,7 +38,7 @@ export const Chat: React.FC = () => {
     // Analyze user message and provide relevant goal-based responses
     if (message.toLowerCase().includes("progress")) {
       const overallProgress = Math.round(
-        goals.reduce((acc, goal) => acc + (goal.currentProgress / goal.target) * 100, 0) / goals.length
+        goals.reduce((acc, goal) => acc + (goal.currentProgress / 100) * 100, 0) / goals.length
       );
       return `Your overall progress is ${overallProgress}%. Keep up the great work!`;
     }
@@ -54,7 +54,7 @@ ${categoryProgress.join("\n")}`;
     }
 
     if (message.toLowerCase().includes("streak")) {
-      const streak = AnalyticsService.getStreakCount(goals);
+      const streak = AnalyticsService.getGoalStreak(goals);
       return `Your current streak is ${streak} days! Keep it going!`;
     }
 
@@ -86,21 +86,21 @@ ${categoryProgress.join("\n")}`;
           className={`fixed bottom-28 right-4 w-80 rounded-lg shadow-xl border-2 overflow-hidden ${
             settings.darkMode
               ? 'bg-gray-800 border-gray-700'
-              : 'bg-white border-purple-200'
+              : 'bg-purple-200 border-purple-200'
           }`}
         >
           <div
             className={`p-4 flex justify-between items-center ${
               settings.darkMode
                 ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-100'
-                : 'bg-gradient-to-r from-purple-600 to-orange-500 text-white'
+                : 'bg-gradient-to-r from-purple-600 to-orange-500 text-purple-200'
             }`}
           >
-            <h3 className="font-semibold">HabitHub Assistant</h3>
+            <h3 className="font-semibold text-gradient-to-r from-blue-200 to-purple-400 text-gray-100">HabitHub Assistant</h3>
             <button
               onClick={() => setIsChatOpen(false)}
               className={`text-2xl ${
-                settings.darkMode ? 'hover:text-gray-400' : 'hover:text-purple-200'
+                settings.darkMode ? 'hover:text-purple-900' : 'hover:text-purple-200'
               }`}
             >
               ✕
@@ -151,8 +151,8 @@ ${categoryProgress.join("\n")}`;
               type="submit"
               className={`ml-2 p-2 rounded-lg hover:opacity-90 ${
                 settings.darkMode
-                  ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-100'
-                  : 'bg-gradient-to-r from-purple-600 to-orange-500 text-white'
+                  ? 'bg-gradient-to-r from-blue-200 to-purple-400 text-gray-100'
+                  : 'bg-gradient-to-r from-purple-600 to-orange-500 text-purple-200'
               }`}
             >
               <Send className="h-6 w-6" />
@@ -166,8 +166,8 @@ ${categoryProgress.join("\n")}`;
         onClick={() => setIsChatOpen(!isChatOpen)}
         className={`fixed bottom-16 right-4 p-4 rounded-full shadow-lg hover:shadow-xl transition-shadow ${
           settings.darkMode
-            ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-gray-100'
-            : 'bg-gradient-to-r from-purple-600 to-orange-500 text-white'
+            ? 'bg-gradient-to-r from-blue-200 to-purple-400 text-gray-100'
+            : 'bg-gradient-to-r from-purple-600 to-orange-500 text-purple-200'
         }`}
       >
         <MessageCircle className="h-6 w-6" />

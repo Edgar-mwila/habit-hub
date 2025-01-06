@@ -6,43 +6,34 @@ export interface Metric {
     format?: string; // For currency formatting or custom display formats
   }
   
-export interface Progress {
-    id: string;
-    goalId: string;
-    date: string;
-    value: number;
-    notes?: string;
-  }
-
 export interface Event {
     id: string;
     title: string;
     date: string;
-    type: 'goal' | 'task' | 'appointment';
+    type: 'event' | 'appointment';
     time?: string;
     description?: string;
   }
+
+export interface Review {
+    id: string;
+    goalId: string;
+    date: string;
+    value: number; //As percentage showing how much closer we are to the goal
+    notes: string;
+  }
   
 export interface Goal {
-    progress(progress: any): unknown | undefined;
-    dueDate: string | number | Date;
-    type: string;
+    dueDate: string;
     id: string;
     title: string;
     description?: string;
-    category: string;
-    timeframe: 'daily' | 'weekly' | 'monthly' | 'yearly';
-    startDate: string;
-    endDate: string;
-    target: number;
-    currentProgress: number;
-    metric: Metric;
-    // status: 'not-started' | 'in-progress' | 'completed' | 'at-risk';
+    category: 'Career' | 'Finanace' | 'Education' | 'Health' | 'Personal';
     status: string;
+    currentProgress: number; //As percentage updated each time a review occurs.
     subGoals?: Goal[];
-    progressHistory: Progress[];
-    reminderFrequency?: 'daily' | 'weekly' | 'never';
-    tags?: string[];
+    reviewHistory: Review[];
+    reviewFrequency?: 'daily' | 'weekly' | 'never';
   }
   
 export interface Category {
@@ -50,16 +41,6 @@ export interface Category {
     name: string;
     color: string;
     icon?: string;
-  }
-  
-export interface User {
-    id: string;
-    preferences: {
-      categories: Category[];
-      customMetrics: Metric[];
-      defaultTimeframe: Goal['timeframe'];
-      theme: 'light' | 'dark';
-    }
   }
   
   // Default Categories and Metrics
