@@ -11,6 +11,7 @@ import { Chat } from './Chat';
 import { useSettings } from '../context/settings';
 import { TodoListView } from './TodoListView';
 import { ListTodo } from 'lucide-react';
+import { Finance } from './finances'; 
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -101,6 +102,7 @@ export const App: React.FC = () => {
             <Route path="/settings" element={<Settings />} />
             <Route path="/about" element={<About />} />
             <Route path="/todo" element={<TodoListView />} />
+            <Route path="/finance" element={<Finance />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
@@ -154,10 +156,10 @@ export const App: React.FC = () => {
             />
             <NavItem
               icon={<BarChart2 size={24} />}
-              to="/analytics"
-              label="Analytics"
-              isActive={activeTab === 'analytics'}
-              onClick={() => setActiveTab('analytics')}
+              to="/finance"
+              label="Finanace"
+              isActive={activeTab === 'finance'}
+              onClick={() => setActiveTab('finance')}
               isDarkMode={settings.darkMode}
             />
           </div>
