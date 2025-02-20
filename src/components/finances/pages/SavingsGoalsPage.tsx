@@ -1,8 +1,7 @@
-import React from 'react';
-import { useFinance } from '../components/FinanceProvider';
+import { FinanceStorageManager } from "../../../services/FinanaceStorageManager";
 
 const SavingsGoalsPage = () => {
-  const { savingsGoals } = useFinance();
+  const savingsGoals = FinanceStorageManager.getSavingsGoals();
 
   return (
     <div className="container mx-auto p-4 pb-20">

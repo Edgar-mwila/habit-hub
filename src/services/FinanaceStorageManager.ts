@@ -35,6 +35,13 @@ export interface Transaction {
     color: string;
   }
   
+  export interface BudgetOverview {
+    categoryId: string;
+    allocated: number;
+    spent: number;
+    remaining: number;
+  }
+
   export interface Category {
     id: string;
     name: string;
@@ -101,6 +108,8 @@ export interface Transaction {
       goalAchievements: true
     }
   };
+
+
   
   // FinanceStorageManager.ts
   export class FinanceStorageManager {
@@ -529,12 +538,7 @@ export interface Transaction {
       .reduce((sum, t) => sum + t.amount, 0);
   }
 
-  static getBudgetOverview(): {
-    categoryId: string;
-    allocated: number;
-    spent: number;
-    remaining: number;
-  }[] {
+  static getBudgetOverview(): BudgetOverview[] {
     const budgets = this.getBudgets();
     return budgets.map(budget => ({
       categoryId: budget.categoryId,

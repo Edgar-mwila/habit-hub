@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, Link,  useLocation } from 'react-router-dom';
 import { Home, Target, Calendar, BarChart2, Settings as SettingsIcon, MessageCircle, MoreVertical } from 'react-feather';
 import { Dashboard } from './Dashboard';
 import { GoalManagement } from './GoalManagement';
@@ -14,9 +14,18 @@ import { ListTodo } from 'lucide-react';
 import { Finance } from './finances'; 
 
 export const App: React.FC = () => {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+};
+
+export const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { settings } = useSettings();
+  const location = useLocation();
 
   // Apply dark mode to the root html element
   useEffect(() => {
@@ -27,8 +36,9 @@ export const App: React.FC = () => {
     }
   }, [settings.darkMode]);
 
+  const shouldShowNav = location.pathname.includes('/finance');
+
   return (
-    <Router>
       <div className={`flex flex-col h-screen ${
         settings.darkMode 
           ? 'bg-gradient-to-br from-gray-900 to-purple-900'
@@ -102,7 +112,7 @@ export const App: React.FC = () => {
             <Route path="/settings" element={<Settings />} />
             <Route path="/about" element={<About />} />
             <Route path="/todo" element={<TodoListView />} />
-            <Route path="/finance" element={<Finance />} />
+            <Route path="/finance/*" element={<Finance />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
@@ -110,7 +120,7 @@ export const App: React.FC = () => {
         {settings.chatAssistant && <Chat />}
 
         {/* Bottom Navigation */}
-        <nav className={`fixed bottom-0 w-full ${
+        {!shouldShowNav && <nav className={`fixed bottom-0 w-full ${
           settings.darkMode 
             ? 'bg-gray-800 shadow-gray-900/50'
             : 'bg-purple-200'
@@ -163,9 +173,8 @@ export const App: React.FC = () => {
               isDarkMode={settings.darkMode}
             />
           </div>
-        </nav>
+        </nav>}
       </div>
-    </Router>
   );
 };
 
